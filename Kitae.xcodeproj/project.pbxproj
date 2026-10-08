@@ -1,0 +1,762 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA786A4830781C0A00B2B000 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA786A4730781C0A00B2B000 /* WidgetKit.framework */; };
+		AA786A4A30781C0A00B2B000 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA786A4930781C0A00B2B000 /* SwiftUI.framework */; };
+		AA786A5730781C0B00B2B000 /* KitaeWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA786A4530781C0A00B2B000 /* KitaeWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AA786A7330781DD700B2B000 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = AA786A7230781DD700B2B000 /* ZIPFoundation */; };
+		AA786A763078312F00B2B000 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = AA786A753078312F00B2B000 /* GRDB */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AA786A5530781C0B00B2B000 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA97174C30781B1200707E87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA786A4430781C0A00B2B000;
+			remoteInfo = KitaeWidgetsExtension;
+		};
+		AA97176230781B1400707E87 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA97174C30781B1200707E87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA97175330781B1200707E87;
+			remoteInfo = Kitae;
+		};
+		AA97176C30781B1400707E87 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA97174C30781B1200707E87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA97175330781B1200707E87;
+			remoteInfo = Kitae;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AA786A5830781C0B00B2B000 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				AA786A5730781C0B00B2B000 /* KitaeWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		AA786A4530781C0A00B2B000 /* KitaeWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KitaeWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA786A4730781C0A00B2B000 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		AA786A4930781C0A00B2B000 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		AA97175430781B1200707E87 /* Kitae.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kitae.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA97176130781B1400707E87 /* KitaeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KitaeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA97176B30781B1400707E87 /* KitaeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KitaeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AA786A5B30781C0B00B2B000 /* Exceptions for "KitaeWidgets" folder in "KitaeWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AA786A4430781C0A00B2B000 /* KitaeWidgetsExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		AA786A4B30781C0A00B2B000 /* KitaeWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AA786A5B30781C0B00B2B000 /* Exceptions for "KitaeWidgets" folder in "KitaeWidgetsExtension" target */,
+			);
+			path = KitaeWidgets;
+			sourceTree = "<group>";
+		};
+		AA97175630781B1200707E87 /* Kitae */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Kitae;
+			sourceTree = "<group>";
+		};
+		AA97176430781B1400707E87 /* KitaeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KitaeTests;
+			sourceTree = "<group>";
+		};
+		AA97176E30781B1400707E87 /* KitaeUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KitaeUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AA786A4230781C0A00B2B000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				AA786A4A30781C0A00B2B000 /* SwiftUI.framework in Frameworks */,
+				AA786A4830781C0A00B2B000 /* WidgetKit.framework in Frameworks */,
+			);
+		};
+		AA97175130781B1200707E87 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				AA786A7330781DD700B2B000 /* ZIPFoundation in Frameworks */,
+				AA786A763078312F00B2B000 /* GRDB in Frameworks */,
+			);
+		};
+		AA97175E30781B1400707E87 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		AA97176830781B1400707E87 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA786A4630781C0A00B2B000 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AA786A4730781C0A00B2B000 /* WidgetKit.framework */,
+				AA786A4930781C0A00B2B000 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AA97174B30781B1200707E87 = {
+			isa = PBXGroup;
+			children = (
+				AA97175630781B1200707E87 /* Kitae */,
+				AA97176430781B1400707E87 /* KitaeTests */,
+				AA97176E30781B1400707E87 /* KitaeUITests */,
+				AA786A4B30781C0A00B2B000 /* KitaeWidgets */,
+				AA786A4630781C0A00B2B000 /* Frameworks */,
+				AA97175530781B1200707E87 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AA97175530781B1200707E87 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA97175430781B1200707E87 /* Kitae.app */,
+				AA97176130781B1400707E87 /* KitaeTests.xctest */,
+				AA97176B30781B1400707E87 /* KitaeUITests.xctest */,
+				AA786A4530781C0A00B2B000 /* KitaeWidgetsExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AA786A4430781C0A00B2B000 /* KitaeWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA786A5C30781C0B00B2B000 /* Build configuration list for PBXNativeTarget "KitaeWidgetsExtension" */;
+			buildPhases = (
+				AA786A4130781C0A00B2B000 /* Sources */,
+				AA786A4230781C0A00B2B000 /* Frameworks */,
+				AA786A4330781C0A00B2B000 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA786A4B30781C0A00B2B000 /* KitaeWidgets */,
+			);
+			name = KitaeWidgetsExtension;
+			productName = KitaeWidgetsExtension;
+			productReference = AA786A4530781C0A00B2B000 /* KitaeWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		AA97175330781B1200707E87 /* Kitae */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA97177330781B1400707E87 /* Build configuration list for PBXNativeTarget "Kitae" */;
+			buildPhases = (
+				AA97175030781B1200707E87 /* Sources */,
+				AA97175130781B1200707E87 /* Frameworks */,
+				AA97175230781B1200707E87 /* Resources */,
+				AA786A5830781C0B00B2B000 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA786A5630781C0B00B2B000 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA97175630781B1200707E87 /* Kitae */,
+			);
+			name = Kitae;
+			packageProductDependencies = (
+				AA786A7230781DD700B2B000 /* ZIPFoundation */,
+				AA786A753078312F00B2B000 /* GRDB */,
+			);
+			productName = Kitae;
+			productReference = AA97175430781B1200707E87 /* Kitae.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AA97176030781B1400707E87 /* KitaeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA97177630781B1400707E87 /* Build configuration list for PBXNativeTarget "KitaeTests" */;
+			buildPhases = (
+				AA97175D30781B1400707E87 /* Sources */,
+				AA97175E30781B1400707E87 /* Frameworks */,
+				AA97175F30781B1400707E87 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA97176330781B1400707E87 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA97176430781B1400707E87 /* KitaeTests */,
+			);
+			name = KitaeTests;
+			productName = KitaeTests;
+			productReference = AA97176130781B1400707E87 /* KitaeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AA97176A30781B1400707E87 /* KitaeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA97177930781B1400707E87 /* Build configuration list for PBXNativeTarget "KitaeUITests" */;
+			buildPhases = (
+				AA97176730781B1400707E87 /* Sources */,
+				AA97176830781B1400707E87 /* Frameworks */,
+				AA97176930781B1400707E87 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA97176D30781B1400707E87 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA97176E30781B1400707E87 /* KitaeUITests */,
+			);
+			name = KitaeUITests;
+			productName = KitaeUITests;
+			productReference = AA97176B30781B1400707E87 /* KitaeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA97174C30781B1200707E87 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					AA786A4430781C0A00B2B000 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					AA97175330781B1200707E87 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					AA97176030781B1400707E87 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = AA97175330781B1200707E87;
+					};
+					AA97176A30781B1400707E87 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = AA97175330781B1200707E87;
+					};
+				};
+			};
+			buildConfigurationList = AA97174F30781B1200707E87 /* Build configuration list for PBXProject "Kitae" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA97174B30781B1200707E87;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA786A7130781DD700B2B000 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				AA786A743078312F00B2B000 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AA97175530781B1200707E87 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA97175330781B1200707E87 /* Kitae */,
+				AA97176030781B1400707E87 /* KitaeTests */,
+				AA97176A30781B1400707E87 /* KitaeUITests */,
+				AA786A4430781C0A00B2B000 /* KitaeWidgetsExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA786A4330781C0A00B2B000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		AA97175230781B1200707E87 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		AA97175F30781B1400707E87 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		AA97176930781B1400707E87 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA786A4130781C0A00B2B000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		AA97175030781B1200707E87 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		AA97175D30781B1400707E87 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		AA97176730781B1400707E87 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA786A5630781C0B00B2B000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA786A4430781C0A00B2B000 /* KitaeWidgetsExtension */;
+			targetProxy = AA786A5530781C0B00B2B000 /* PBXContainerItemProxy */;
+		};
+		AA97176330781B1400707E87 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA97175330781B1200707E87 /* Kitae */;
+			targetProxy = AA97176230781B1400707E87 /* PBXContainerItemProxy */;
+		};
+		AA97176D30781B1400707E87 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA97175330781B1200707E87 /* Kitae */;
+			targetProxy = AA97176C30781B1400707E87 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AA786A5930781C0B00B2B000 /* Debug configuration for PBXNativeTarget "KitaeWidgetsExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KitaeWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = KitaeWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.gureet.Kitae.KitaeWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA786A5A30781C0B00B2B000 /* Release configuration for PBXNativeTarget "KitaeWidgetsExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KitaeWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = KitaeWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.gureet.Kitae.KitaeWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AA97177130781B1400707E87 /* Debug configuration for PBXProject "Kitae" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AA97177230781B1400707E87 /* Release configuration for PBXProject "Kitae" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AA97177430781B1400707E87 /* Debug configuration for PBXNativeTarget "Kitae" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.gureet.Kitae;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA97177530781B1400707E87 /* Release configuration for PBXNativeTarget "Kitae" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.gureet.Kitae;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AA97177730781B1400707E87 /* Debug configuration for PBXNativeTarget "KitaeTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.gureet.KitaeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Kitae.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Kitae";
+			};
+			name = Debug;
+		};
+		AA97177830781B1400707E87 /* Release configuration for PBXNativeTarget "KitaeTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.gureet.KitaeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Kitae.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Kitae";
+			};
+			name = Release;
+		};
+		AA97177A30781B1400707E87 /* Debug configuration for PBXNativeTarget "KitaeUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.gureet.KitaeUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Kitae;
+			};
+			name = Debug;
+		};
+		AA97177B30781B1400707E87 /* Release configuration for PBXNativeTarget "KitaeUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.gureet.KitaeUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Kitae;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA786A5C30781C0B00B2B000 /* Build configuration list for PBXNativeTarget "KitaeWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA786A5930781C0B00B2B000 /* Debug configuration for PBXNativeTarget "KitaeWidgetsExtension" */,
+				AA786A5A30781C0B00B2B000 /* Release configuration for PBXNativeTarget "KitaeWidgetsExtension" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		AA97174F30781B1200707E87 /* Build configuration list for PBXProject "Kitae" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA97177130781B1400707E87 /* Debug configuration for PBXProject "Kitae" */,
+				AA97177230781B1400707E87 /* Release configuration for PBXProject "Kitae" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		AA97177330781B1400707E87 /* Build configuration list for PBXNativeTarget "Kitae" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA97177430781B1400707E87 /* Debug configuration for PBXNativeTarget "Kitae" */,
+				AA97177530781B1400707E87 /* Release configuration for PBXNativeTarget "Kitae" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		AA97177630781B1400707E87 /* Build configuration list for PBXNativeTarget "KitaeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA97177730781B1400707E87 /* Debug configuration for PBXNativeTarget "KitaeTests" */,
+				AA97177830781B1400707E87 /* Release configuration for PBXNativeTarget "KitaeTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		AA97177930781B1400707E87 /* Build configuration list for PBXNativeTarget "KitaeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA97177A30781B1400707E87 /* Debug configuration for PBXNativeTarget "KitaeUITests" */,
+				AA97177B30781B1400707E87 /* Release configuration for PBXNativeTarget "KitaeUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AA786A7130781DD700B2B000 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.20;
+			};
+		};
+		AA786A743078312F00B2B000 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.11.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA786A7230781DD700B2B000 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA786A7130781DD700B2B000 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+		AA786A753078312F00B2B000 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA786A743078312F00B2B000 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = AA97174C30781B1200707E87 /* Project object */;
+	validationLevel = 1;
+}
