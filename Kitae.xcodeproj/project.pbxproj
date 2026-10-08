@@ -70,6 +70,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		AA684BAF193F8D0B4CDB1768 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		AA786A4B30781C0A00B2B000 /* KitaeWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -139,6 +144,7 @@
 				AA97176430781B1400707E87 /* KitaeTests */,
 				AA97176E30781B1400707E87 /* KitaeUITests */,
 				AA786A4B30781C0A00B2B000 /* KitaeWidgets */,
+				AA684BAF193F8D0B4CDB1768 /* Shared */,
 				AA786A4630781C0A00B2B000 /* Frameworks */,
 				AA97175530781B1200707E87 /* Products */,
 			);
@@ -169,6 +175,7 @@
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
+				AA684BAF193F8D0B4CDB1768 /* Shared */,
 				AA786A4B30781C0A00B2B000 /* KitaeWidgets */,
 			);
 			name = KitaeWidgetsExtension;
@@ -191,6 +198,7 @@
 				AA786A5630781C0B00B2B000 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				AA684BAF193F8D0B4CDB1768 /* Shared */,
 				AA97175630781B1200707E87 /* Kitae */,
 			);
 			name = Kitae;
