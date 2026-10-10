@@ -17,7 +17,7 @@ struct WorkoutAccessory: View {
                     Image(systemName: "dumbbell.fill")
                         .foregroundStyle(.olive)
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(workout.day.name)
+                        Text(workout.dayName)
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.ink)
                         if placement != .inline {
@@ -46,7 +46,7 @@ struct WorkoutAccessory: View {
                 .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("\(workout.day.name) in progress, \(workout.doneCount) of \(workout.setCount) sets done")
+            .accessibilityLabel("\(workout.dayName) in progress, \(workout.doneCount) of \(workout.setCount) sets done")
             .accessibilityHint("Opens the workout")
         }
     }

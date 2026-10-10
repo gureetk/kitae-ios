@@ -12,13 +12,7 @@ enum AppTab: Hashable {
 
 /// The four tabs, the workout bar above them, and the workout itself.
 struct RootView: View {
-    @State private var model: AppModel = {
-        let model = AppModel.sample()
-        #if DEBUG
-        DebugLaunch.prepare(model)
-        #endif
-        return model
-    }()
+    @Bindable var model: AppModel
     @State private var tab = AppTab.today
 
     var body: some View {
@@ -48,6 +42,14 @@ struct RootView: View {
         }
         .environment(model)
         .tint(.olive)
+        .alert(
+            "Something went wrong",
+            isPresented: Binding(get: { model.problem != nil }, set: { if !$0 { model.problem = nil } })
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(model.problem ?? "")
+        }
         .task {
             #if DEBUG
             // A cover asked for before the first frame doesn't open, so wait a moment.

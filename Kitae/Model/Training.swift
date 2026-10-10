@@ -24,6 +24,11 @@ nonisolated enum SetType: String, CaseIterable, Identifiable, Hashable, Sendable
         }
     }
 
+    /// A type as it's stored. One this version doesn't know counts as standard.
+    init(stored: String) {
+        self = SetType(rawValue: stored) ?? .standard
+    }
+
     /// The letter in a set's label, like the W in W1. Standard sets only have a number.
     var letter: String? {
         switch self {
@@ -50,7 +55,7 @@ nonisolated func setLabels(for types: [SetType]) -> [String] {
     }
 }
 
-/// The muscle an exercise mainly works. Raw values match Kitae for Android.
+/// The muscle an exercise mainly works. Raw values are how Kitae for Android stores them.
 nonisolated enum MuscleGroup: String, CaseIterable, Identifiable, Hashable, Sendable {
     case biceps = "Biceps"
     case triceps = "Triceps"
@@ -61,20 +66,39 @@ nonisolated enum MuscleGroup: String, CaseIterable, Identifiable, Hashable, Send
     case glutes = "Glutes"
     case core = "Core"
     case chest = "Chest"
-    case back = "Back"
-    case lats = "Lats"
     case traps = "Traps"
+    case lats = "Lats"
+    case upperBack = "UpperBack"
 
     var id: Self { self }
-    var name: String { rawValue }
+
+    var name: String {
+        switch self {
+        case .upperBack: "Back"
+        default: rawValue
+        }
+    }
 }
 
 nonisolated struct Exercise: Identifiable, Hashable, Sendable {
     var id: Int64
     var name: String
-    var target: MuscleGroup
+    /// The muscle as it's stored, like "Chest" or "UpperBack".
+    var target: String
     var isIsometric = false
     /// Rest after each set of this exercise, unless the set has its own. nil uses the default.
+    var restSeconds: Int?
+
+    var muscle: MuscleGroup? { MuscleGroup(rawValue: target) }
+}
+
+/// A set's values before it's saved. Kitae for Android's `SetDraft`.
+nonisolated struct SetDraft: Hashable, Sendable {
+    var reps: Int
+    /// Always kilograms.
+    var weightKg: Double
+    var type: SetType = .standard
+    /// Rest after this set. nil uses the exercise's rest, or the default.
     var restSeconds: Int?
 }
 
@@ -108,9 +132,22 @@ nonisolated struct Plan: Identifiable, Hashable, Sendable {
     var id: Int64
     var name: String
     var days: [TrainingDay]
+}
 
-    var exerciseCount: Int {
-        Set(days.flatMap { $0.exercises.map(\.exercise.id) }).count
+/// A plan's name, for picking one.
+nonisolated struct PlanSummary: Identifiable, Hashable, Sendable {
+    var id: Int64
+    var name: String
+}
+
+/// New positions that put warm-ups in front of the other sets, keeping each group's order.
+/// Only the sets that move are returned. `items` must be in their current order.
+/// Kitae for Android's `warmupsFirstSlots`.
+nonisolated func warmupsFirstSlots<T>(_ items: [T], slot: (T) -> Int, isWarmup: (T) -> Bool) -> [(item: T, slot: Int)] {
+    let slots = items.map(slot)
+    let wanted = items.filter(isWarmup) + items.filter { !isWarmup($0) }
+    return wanted.enumerated().compactMap { index, item in
+        slot(item) == slots[index] ? nil : (item, slots[index])
     }
 }
 

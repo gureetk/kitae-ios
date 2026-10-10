@@ -10,7 +10,7 @@ struct WorkoutView: View {
 
     @FocusState private var focus: SetField?
     @State private var optionsFor: SetOptionsTarget?
-    @State private var finishStep: FinishStep?
+    @State private var finishQuestion: FinishQuestion?
     @State private var confirmsDiscard = false
     @State private var showsPlanEditor = false
 
@@ -119,15 +119,8 @@ struct WorkoutView: View {
             }
             .buttonStyle(MauveButtonStyle())
             .frame(width: workout.rest.isActive ? 100 : nil)
-            .confirmationDialog(
-                finishTitle,
-                isPresented: Binding(get: { finishStep != nil }, set: { if !$0 { finishStep = nil } }),
-                titleVisibility: .visible,
-                presenting: finishStep
-            ) { step in
-                finishActions(step)
-            } message: { step in
-                Text(finishMessage(step))
+            .finishQuestions($finishQuestion, workout: workout) { mode, addNewSets in
+                model.finishWorkout(mode, addNewSets: addNewSets)
             }
         }
         .padding(.horizontal, 16)
@@ -146,7 +139,7 @@ struct WorkoutView: View {
         }
         ToolbarItem(placement: .principal) {
             VStack(spacing: 0) {
-                Text(workout.day.name)
+                Text(workout.dayName)
                     .font(.kitaeDisplay(24, relativeTo: .headline))
                     .foregroundStyle(.ink)
                 HStack(spacing: 0) {
@@ -159,7 +152,7 @@ struct WorkoutView: View {
             .accessibilityElement(children: .combine)
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
-            Button("Edit \(workout.day.name)", systemImage: "pencil") {
+            Button("Edit \(workout.dayName)", systemImage: "pencil") {
                 showsPlanEditor = true
             }
             Menu("More", systemImage: "ellipsis") {
@@ -253,72 +246,12 @@ struct WorkoutView: View {
 
     // MARK: Finishing
 
-    enum FinishStep {
-        case unfinished(Int)
-        case nothingDone
-        case addedSets(Int)
-    }
-
+    /// Asks what to do with sets that weren't done or were added, or finishes straight away.
     private func startFinishing() {
-        if workout.doneCount == 0 {
-            finishStep = .nothingDone
-        } else if workout.notDoneCount > 0 {
-            finishStep = .unfinished(workout.notDoneCount)
-        } else if workout.addedDoneCount > 0 {
-            finishStep = .addedSets(workout.addedDoneCount)
+        if let question = FinishQuestion.first(for: workout, startingAnotherDay: false) {
+            finishQuestion = question
         } else {
-            model.finishWorkout()
-        }
-    }
-
-    private var finishTitle: String {
-        switch finishStep {
-        case .addedSets: "Keep the new sets?"
-        default: "Finish workout?"
-        }
-    }
-
-    private func finishMessage(_ step: FinishStep) -> String {
-        let day = workout.day.name
-        switch step {
-        case .unfinished(1):
-            return "1 set isn't done. Skipping it keeps \(day) as it is. Removing it also takes it out of the plan."
-        case .unfinished(let count):
-            return "\(count) sets aren't done. Skipping them keeps \(day) as it is. Removing them also takes them out of the plan."
-        case .nothingDone:
-            return "Nothing was done in this workout. Keep it as skipped, or discard it? Your plan stays the same either way."
-        case .addedSets(1):
-            return "You added 1 set. Add it to \(day) for next time?"
-        case .addedSets(let count):
-            return "You added \(count) sets. Add them to \(day) for next time?"
-        }
-    }
-
-    @ViewBuilder
-    private func finishActions(_ step: FinishStep) -> some View {
-        switch step {
-        case .unfinished:
-            Button("Keep as skipped") { askAboutAddedSetsOrFinish() }
-            Button("Remove from plan", role: .destructive) { askAboutAddedSetsOrFinish() }
-        case .nothingDone:
-            Button("Keep as skipped") { model.finishWorkout() }
-            Button("Discard workout", role: .destructive) { model.discardWorkout() }
-        case .addedSets:
-            Button("Add to \(workout.day.name)") { model.finishWorkout() }
-            Button("Only this workout") { model.finishWorkout() }
-        }
-    }
-
-    /// The second question, about sets added during the workout, comes once the first has closed.
-    private func askAboutAddedSetsOrFinish() {
-        let added = workout.addedDoneCount
-        guard added > 0 else {
-            model.finishWorkout()
-            return
-        }
-        Task {
-            try? await Task.sleep(for: .milliseconds(400))
-            finishStep = .addedSets(added)
+            model.finishWorkout(.keepSkipped, addNewSets: false)
         }
     }
 

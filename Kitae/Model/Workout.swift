@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Foundation
+import GRDB
 import Observation
+import os
 
 nonisolated struct WorkoutSet: Identifiable, Hashable, Sendable {
     var id: Int64
@@ -16,49 +18,56 @@ nonisolated struct WorkoutSet: Identifiable, Hashable, Sendable {
 }
 
 nonisolated struct WorkoutExercise: Identifiable, Hashable, Sendable {
+    /// The exercise's id: a workout lists each exercise once.
     var id: Int64
     var exercise: Exercise
     var sets: [WorkoutSet]
 }
 
 /// A workout in progress: the day's sets, which are done, and the rest timer.
+///
+/// Every change is saved straight away and the sets are read back, so the screen always
+/// shows what's in the database.
 @Observable
 final class Workout: Identifiable {
-    let id = UUID()
-    let planName: String
-    let day: TrainingDay
+    let id: Int64
+    /// The plan's day this workout is of. nil if the day was deleted.
+    let dayID: Int64?
+    let dayName: String
     let startedAt: Date
-    var exercises: [WorkoutExercise]
+    private(set) var exercises: [WorkoutExercise]
     var rest = RestTimer()
     /// Goes up each time a rest runs out, so the screen can tap the phone.
     private(set) var restsFinished = 0
+    var defaultRestSeconds: Int
+    var defaultWeightKg: Double
 
-    private let defaultRestSeconds: Int
-    private var nextSetID: Int64
+    private let database: KitaeDatabase
     @ObservationIgnored private var restEnd: Task<Void, Never>?
 
-    init(day: TrainingDay, planName: String, defaultRestSeconds: Int, startedAt: Date = .now) {
-        self.day = day
-        self.planName = planName
-        self.startedAt = startedAt
+    private static let log = Logger(subsystem: "ca.gureet.kitae", category: "workout")
+
+    /// The workout with this id, or nil if there isn't one.
+    init?(id: Int64, database: KitaeDatabase, defaultRestSeconds: Int, defaultWeightKg: Double) throws {
+        guard let session = try database.read({ db in try Sessions.session(db, id: id) }) else { return nil }
+        self.id = id
+        dayID = session.dayID
+        dayName = session.dayName ?? "Workout"
+        startedAt = session.startedAt.map(Date.init(epochMilliseconds:)) ?? EpochDay.date(session.date)
+        exercises = try database.read { db in try Sessions.exercises(db, sessionID: id, dayID: session.dayID) }
+        self.database = database
         self.defaultRestSeconds = defaultRestSeconds
-        let exercises = day.exercises.map { item in
-            WorkoutExercise(
-                id: item.id,
-                exercise: item.exercise,
-                sets: item.sets.map {
-                    WorkoutSet(id: $0.id, type: $0.type, reps: $0.reps, weightKg: $0.weightKg, restSeconds: $0.restSeconds)
-                }
-            )
-        }
-        self.exercises = exercises
-        nextSetID = (exercises.flatMap(\.sets).map(\.id).max() ?? 0) + 1
+        self.defaultWeightKg = defaultWeightKg
     }
 
     var setCount: Int { exercises.reduce(0) { $0 + $1.sets.count } }
     var doneCount: Int { exercises.reduce(0) { $0 + $1.sets.filter(\.isDone).count } }
     var notDoneCount: Int { setCount - doneCount }
-    var addedDoneCount: Int { exercises.reduce(0) { $0 + $1.sets.filter { $0.isAdded && $0.isDone }.count } }
+    /// Sets added during the workout and done, which Finish offers to add to the day.
+    var addedDoneCount: Int {
+        guard dayID != nil else { return 0 }
+        return exercises.reduce(0) { $0 + $1.sets.filter { $0.isAdded && $0.isDone }.count }
+    }
 
     func set(_ id: WorkoutSet.ID) -> WorkoutSet? {
         for exercise in exercises {
@@ -71,45 +80,59 @@ final class Workout: Identifiable {
         exercises.first { $0.sets.contains { $0.id == setID } }
     }
 
+    /// Changes a set's reps, weight, type or rest.
     func update(_ id: WorkoutSet.ID, _ change: (inout WorkoutSet) -> Void) {
-        for e in exercises.indices {
-            if let s = exercises[e].sets.firstIndex(where: { $0.id == id }) {
-                change(&exercises[e].sets[s])
-                return
-            }
-        }
+        guard let old = set(id) else { return }
+        var new = old
+        change(&new)
+        guard new != old else { return }
+        save { db in try Sessions.update(db, set: new) }
     }
 
-    /// Ticks a set off, or unticks it. Ticking starts the rest timer.
+    /// Ticks a set off, or unticks it. Ticking starts the rest timer, unless it was the last set.
     func toggleDone(_ id: WorkoutSet.ID) {
-        var nowDone = false
-        update(id) {
-            $0.isDone.toggle()
-            nowDone = $0.isDone
-        }
-        if nowDone, let set = set(id), let exercise = exercise(containing: id) {
-            startRest(seconds: set.restSeconds ?? exercise.exercise.restSeconds ?? defaultRestSeconds)
+        guard let set = set(id), let exercise = exercise(containing: id) else { return }
+        let isLastSet = notDoneCount <= 1
+        let isDone = !set.isDone
+        save { db in try Sessions.setDone(db, setID: id, isDone: isDone) }
+        let seconds = set.restSeconds ?? exercise.exercise.restSeconds ?? defaultRestSeconds
+        if isDone, !isLastSet, seconds > 0 {
+            startRest(seconds: seconds)
         }
     }
 
-    /// Adds a set like the exercise's last one.
+    /// Adds a set like the exercise's last one, not done yet. A warm-up is followed by a
+    /// standard set. With no set to copy, it's like the day's planned sets or the last time
+    /// the exercise was done, or 12 reps of the default weight.
     func addSet(to exerciseID: WorkoutExercise.ID) {
-        guard let e = exercises.firstIndex(where: { $0.id == exerciseID }) else { return }
-        let last = exercises[e].sets.last
-        exercises[e].sets.append(WorkoutSet(
-            id: nextSetID,
-            type: last?.type == .warmup ? .standard : (last?.type ?? .standard),
-            reps: last?.reps ?? 10,
-            weightKg: last?.weightKg ?? 0,
-            restSeconds: last?.restSeconds,
-            isAdded: true
-        ))
-        nextSetID += 1
+        guard let exercise = exercises.first(where: { $0.id == exerciseID }) else { return }
+        let sessionID = id
+        let dayID = dayID
+        let defaultSet = SetDraft(reps: 12, weightKg: defaultWeightKg)
+        let last = exercise.sets.last.map {
+            SetDraft(reps: $0.reps, weightKg: $0.weightKg, type: $0.type, restSeconds: $0.restSeconds)
+        }
+        save { db in
+            var set = try last ?? Sessions.lastKnownSet(db, exerciseID: exerciseID, dayID: dayID) ?? defaultSet
+            if set.type == .warmup { set.type = .standard }
+            try Sessions.addSet(db, sessionID: sessionID, exerciseID: exerciseID, set: set)
+        }
     }
 
     func deleteSet(_ id: WorkoutSet.ID) {
-        for e in exercises.indices {
-            exercises[e].sets.removeAll { $0.id == id }
+        save { db in try Sessions.deleteSet(db, setID: id) }
+    }
+
+    /// Saves a change, then reads the sets back.
+    private func save(_ change: (Database) throws -> Void) {
+        let sessionID = id
+        let dayID = dayID
+        do {
+            try database.write(change)
+            exercises = try database.read { db in try Sessions.exercises(db, sessionID: sessionID, dayID: dayID) }
+        } catch {
+            Self.log.error("Couldn't save the workout: \(error.localizedDescription, privacy: .public)")
+            assertionFailure("Couldn't save the workout: \(error)")
         }
     }
 

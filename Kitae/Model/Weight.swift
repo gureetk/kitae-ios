@@ -34,6 +34,14 @@ nonisolated enum WeightUnit: String, CaseIterable, Identifiable, Sendable {
 
     /// The −/+ buttons above the keyboard. The same numbers in both units, like Kitae for Android.
     var steps: [Double] { [-5, -2.5, 2.5, 5] }
+
+    /// What a new set weighs when there's nothing to copy: 20 kg, or 45 lb.
+    var defaultWeightKg: Double {
+        switch self {
+        case .kilograms: 20
+        case .pounds: toKilograms(45)
+        }
+    }
 }
 
 /// How weights are written: 22.5 or 22,5.

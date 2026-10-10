@@ -5,13 +5,46 @@ import SwiftUI
 
 @main
 struct KitaeApp: App {
+    @State private var launch = Launch.open()
+
     init() {
         KitaeFonts.register()
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            switch launch {
+            case .ready(let model):
+                RootView(model: model)
+            case .failed(let message):
+                ContentUnavailableView {
+                    Label("Kitae can't open its data", systemImage: "exclamationmark.triangle")
+                } description: {
+                    Text(message)
+                }
+            }
+        }
+    }
+}
+
+/// Opens the database when Kitae starts.
+enum Launch {
+    case ready(AppModel)
+    case failed(String)
+
+    static func open() -> Launch {
+        do {
+            #if DEBUG
+            // Example data for screenshots, kept away from the real database.
+            if DebugLaunch.usesExampleData {
+                let model = AppModel(database: try .inMemory())
+                DebugLaunch.prepare(model)
+                return .ready(model)
+            }
+            #endif
+            return .ready(AppModel(database: try .app()))
+        } catch {
+            return .failed(error.localizedDescription)
         }
     }
 }

@@ -7,7 +7,9 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AppModel.self) private var model
     @State private var line = TodayLines.random()
+    /// The day to start once the workout in progress is finished.
     @State private var switchingTo: TrainingDay?
+    @State private var finishQuestion: FinishQuestion?
     @State private var showsPlanEditor = false
 
     var body: some View {
@@ -26,46 +28,49 @@ struct TodayView: View {
                             .foregroundStyle(.inkSoft)
                             .frame(maxWidth: .infinity)
                             .padding(.top, 14)
-                        exerciseList(day)
-                            .padding(.top, 44)
-                            .padding(.horizontal, 16)
+                        if !day.exercises.isEmpty {
+                            exerciseList(day)
+                                .padding(.top, 44)
+                                .padding(.horizontal, 16)
+                        }
                     }
                     .padding(.bottom, 24)
+                } else if model.currentPlan == nil {
+                    ContentUnavailableView {
+                        Label("No plan yet", systemImage: "calendar")
+                    } description: {
+                        Text("Choose a plan to follow, and Kitae lines up its days for you.")
+                    } actions: {
+                        Menu("Choose a plan") {
+                            ForEach(model.plans) { plan in
+                                Button(plan.name) { model.selectPlan(plan.id) }
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .padding(.top, 80)
                 } else {
                     ContentUnavailableView("No days yet", systemImage: "calendar", description: Text("Add a training day to this plan to start."))
+                        .padding(.top, 80)
                 }
             }
             .scrollIndicators(.hidden)
             .background(Color.paper)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { planMenu }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Edit \(model.selectedDay?.name ?? "plan")", systemImage: "pencil") {
-                        showsPlanEditor = true
+                if let day = model.selectedDay {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Edit \(day.name)", systemImage: "pencil") {
+                            showsPlanEditor = true
+                        }
                     }
                 }
             }
             .sheet(isPresented: $showsPlanEditor) {
                 ComingSoonSheet(title: "Plan editor", message: "Editing plans comes in a later batch.")
             }
-            .confirmationDialog(
-                "Workout in progress",
-                isPresented: Binding(get: { switchingTo != nil }, set: { if !$0 { switchingTo = nil } }),
-                titleVisibility: .visible,
-                presenting: switchingTo
-            ) { day in
-                Button("Finish it and start \(day.name)") {
-                    model.finishWorkout()
-                    model.selectedDayID = day.id
-                    model.startWorkout(day)
-                }
-                Button("Continue \(model.workout?.day.name ?? "workout")") {
-                    model.isWorkoutPresented = true
-                }
-            } message: { day in
-                Text("\(model.workout?.day.name ?? "Your workout") isn't finished yet. Finish it and start \(day.name)?")
-            }
         }
+        .task { await openDebugScreen() }
     }
 
     private func header(_ day: TrainingDay) -> some View {
@@ -81,22 +86,35 @@ struct TodayView: View {
                 .padding(.bottom, -12)
                 .padding(.leading, -4)
                 .accessibilityAddTraits(.isHeader)
-            Caption("\(counted(day.exercises.count, "exercise", "exercises")) · \(counted(day.setCount, "set", "sets"))", size: 14)
+            Caption(detail(for: day), size: 14)
         }
         .padding(.horizontal, 24)
         .padding(.top, 24)
     }
 
+    private func isInProgress(_ day: TrainingDay) -> Bool {
+        model.workout?.dayID == day.id
+    }
+
     private func status(for day: TrainingDay) -> String {
-        model.workout?.day.id == day.id ? ".in progress" : ".up next"
+        if isInProgress(day) { return ".in progress" }
+        return model.hasDoneSets ? ".up next" : ".first session"
+    }
+
+    private func detail(for day: TrainingDay) -> String {
+        if isInProgress(day), let workout = model.workout {
+            return "\(workout.doneCount)/\(workout.setCount) sets done"
+        }
+        if day.exercises.isEmpty { return "no exercises yet" }
+        return "\(counted(day.exercises.count, "exercise", "exercises")) · \(counted(day.setCount, "set", "sets"))"
     }
 
     private var dayChips: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 8) {
-                ForEach(model.currentPlan.days) { day in
+                ForEach(model.days) { day in
                     DayChip(title: day.name, isSelected: day.id == model.selectedDay?.id) {
-                        model.selectedDayID = day.id
+                        model.pickedDayID = day.id
                     }
                 }
             }
@@ -106,22 +124,36 @@ struct TodayView: View {
     }
 
     private func startButton(_ day: TrainingDay) -> some View {
-        let continues = model.workout?.day.id == day.id
+        let continues = isInProgress(day)
+        let isEmpty = day.exercises.isEmpty && !continues
         return Button {
-            if let current = model.workout, current.day.id != day.id {
+            if isEmpty {
+                showsPlanEditor = true
+            } else if let workout = model.workout, workout.dayID != day.id {
                 switchingTo = day
+                finishQuestion = FinishQuestion.first(for: workout, startingAnotherDay: true)
             } else {
                 model.startWorkout(day)
             }
         } label: {
             HStack(spacing: 10) {
-                Text(continues ? "Continue" : "Start")
-                Image(systemName: "arrow.up.right")
+                Text(continues ? "Continue" : isEmpty ? "Edit \(day.name)" : "Start")
+                Image(systemName: isEmpty ? "pencil" : "arrow.up.right")
                     .font(.system(size: 16, weight: .semibold))
             }
             .frame(maxWidth: .infinity, minHeight: 58)
         }
         .buttonStyle(MauveButtonStyle())
+        .finishQuestions(
+            $finishQuestion,
+            workout: model.workout,
+            nextDayName: switchingTo?.name,
+            onContinue: { model.isWorkoutPresented = true }
+        ) { mode, addNewSets in
+            guard let next = switchingTo else { return }
+            model.finishWorkout(mode, addNewSets: addNewSets)
+            model.startWorkout(next)
+        }
     }
 
     private func exerciseList(_ day: TrainingDay) -> some View {
@@ -148,24 +180,49 @@ struct TodayView: View {
         }
     }
 
+    private var planSelection: Binding<Plan.ID?> {
+        Binding(
+            get: { model.currentPlan?.id },
+            set: { id in if let id { model.selectPlan(id) } }
+        )
+    }
+
+    private var planPicker: some View {
+        Picker("Plan", selection: planSelection) {
+            ForEach(model.plans) { plan in
+                Text(plan.name).tag(Plan.ID?.some(plan.id))
+            }
+        }
+        .disabled(model.workout != nil)
+    }
+
     private var planMenu: some View {
         Menu {
-            Picker("Plan", selection: Binding(get: { model.currentPlanID }, set: { model.currentPlanID = $0 })) {
-                ForEach(model.plans) { plan in
-                    Text(plan.name).tag(plan.id)
-                }
-            }
-            .disabled(model.workout != nil)
+            planPicker
         } label: {
             HStack(spacing: 6) {
-                Text(model.currentPlan.name)
+                Text(model.currentPlan?.name ?? "Plans")
                     .fontWeight(.semibold)
                 Image(systemName: "chevron.down")
                     .font(.footnote.weight(.bold))
             }
             .foregroundStyle(.ink)
         }
-        .accessibilityLabel("Plan: \(model.currentPlan.name)")
+        .accessibilityLabel("Plan: \(model.currentPlan?.name ?? "none")")
+    }
+}
+
+extension TodayView {
+    /// `-KitaeScreen switch`: picks another day while the example workout is going and taps Start.
+    private func openDebugScreen() async {
+        #if DEBUG
+        guard DebugLaunch.screen == "switch", DebugLaunch.consume("switch"), let workout = model.workout,
+              let next = model.days.first(where: { $0.id != workout.dayID }) else { return }
+        try? await Task.sleep(for: .milliseconds(700))
+        model.pickedDayID = next.id
+        switchingTo = next
+        finishQuestion = FinishQuestion.first(for: workout, startingAnotherDay: true)
+        #endif
     }
 }
 
