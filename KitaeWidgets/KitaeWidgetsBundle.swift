@@ -1,17 +1,16 @@
-//
-//  KitaeWidgetsBundle.swift
-//  KitaeWidgets
-//
-//  Created by gureet on 2026-10-08.
-//
+// Kitae for iPhone
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 @main
 struct KitaeWidgetsBundle: WidgetBundle {
+    init() {
+        KitaeFonts.register()
+    }
+
     var body: some Widget {
-        KitaeWidgets()
-        KitaeWidgetsLiveActivity()
+        RestTimerLiveActivity()
     }
 }

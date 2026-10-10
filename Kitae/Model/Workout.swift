@@ -36,19 +36,31 @@ final class Workout: Identifiable {
     let dayName: String
     let startedAt: Date
     private(set) var exercises: [WorkoutExercise]
-    var rest = RestTimer()
-    /// Goes up each time a rest runs out, so the screen can tap the phone.
+    private(set) var rest = RestTimer()
+    /// Goes up each time a rest starts, and each time one runs out, so the Lock Screen can
+    /// tell a new rest apart and the screen can tap the phone.
+    private(set) var restsStarted = 0
     private(set) var restsFinished = 0
     var defaultRestSeconds: Int
     var defaultWeightKg: Double
+    /// Called after every change, so the Lock Screen and alerts can follow.
+    @ObservationIgnored var onChange: (() -> Void)?
 
     private let database: KitaeDatabase
+    private let restStore: RestTimerStore
     @ObservationIgnored private var restEnd: Task<Void, Never>?
 
     private static let log = Logger(subsystem: "ca.gureet.kitae", category: "workout")
 
-    /// The workout with this id, or nil if there isn't one.
-    init?(id: Int64, database: KitaeDatabase, defaultRestSeconds: Int, defaultWeightKg: Double) throws {
+    /// The workout with this id, or nil if there isn't one. A rest that was going when
+    /// Kitae was last closed carries on.
+    init?(
+        id: Int64,
+        database: KitaeDatabase,
+        restStore: RestTimerStore,
+        defaultRestSeconds: Int,
+        defaultWeightKg: Double
+    ) throws {
         guard let session = try database.read({ db in try Sessions.session(db, id: id) }) else { return nil }
         self.id = id
         dayID = session.dayID
@@ -56,8 +68,13 @@ final class Workout: Identifiable {
         startedAt = session.startedAt.map(Date.init(epochMilliseconds:)) ?? EpochDay.date(session.date)
         exercises = try database.read { db in try Sessions.exercises(db, sessionID: id, dayID: session.dayID) }
         self.database = database
+        self.restStore = restStore
         self.defaultRestSeconds = defaultRestSeconds
         self.defaultWeightKg = defaultWeightKg
+        if let saved = restStore.load(workoutID: id, workoutStartedAt: startedAt, now: .now) {
+            rest = saved
+            scheduleRestEnd()
+        }
     }
 
     var setCount: Int { exercises.reduce(0) { $0 + $1.sets.count } }
@@ -78,6 +95,16 @@ final class Workout: Identifiable {
 
     func exercise(containing setID: WorkoutSet.ID) -> WorkoutExercise? {
         exercises.first { $0.sets.contains { $0.id == setID } }
+    }
+
+    /// The first set that isn't done yet, in the order of the screen.
+    var nextSet: (exercise: Exercise, set: WorkoutSet)? {
+        for exercise in exercises {
+            if let set = exercise.sets.first(where: { !$0.isDone }) {
+                return (exercise.exercise, set)
+            }
+        }
+        return nil
     }
 
     /// Changes a set's reps, weight, type or rest.
@@ -134,35 +161,46 @@ final class Workout: Identifiable {
             Self.log.error("Couldn't save the workout: \(error.localizedDescription, privacy: .public)")
             assertionFailure("Couldn't save the workout: \(error)")
         }
+        onChange?()
     }
 
     // MARK: Rest timer
 
     func startRest(seconds: Int) {
         rest.start(seconds: seconds, at: .now)
-        scheduleRestEnd()
+        restsStarted += 1
+        restChanged()
     }
 
     func pauseRest() {
         rest.pause(at: .now)
-        restEnd?.cancel()
+        restChanged()
     }
 
     func resumeRest() {
         rest.resume(at: .now)
-        scheduleRestEnd()
+        restChanged()
     }
 
+    /// Adds or takes away time. Taking away more than is left ends the rest.
     func addRest(_ seconds: TimeInterval) {
         rest.add(seconds, at: .now)
-        scheduleRestEnd()
+        restChanged()
     }
 
     func skipRest() {
+        guard rest.isActive else { return }
         rest.stop()
-        restEnd?.cancel()
+        restChanged()
     }
 
+    private func restChanged() {
+        scheduleRestEnd()
+        restStore.save(rest, workoutID: id, workoutStartedAt: startedAt)
+        onChange?()
+    }
+
+    /// Ends the rest when it runs out, while Kitae is running.
     private func scheduleRestEnd() {
         restEnd?.cancel()
         guard let endsAt = rest.endsAt else { return }
@@ -174,6 +212,7 @@ final class Workout: Identifiable {
             guard !Task.isCancelled, let self, self.rest.endsAt == endsAt else { return }
             self.rest.stop()
             self.restsFinished += 1
+            self.restChanged()
         }
     }
 }

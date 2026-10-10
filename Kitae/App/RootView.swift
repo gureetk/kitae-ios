@@ -14,6 +14,7 @@ enum AppTab: Hashable {
 struct RootView: View {
     @Bindable var model: AppModel
     @State private var tab = AppTab.today
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView(selection: $tab) {
@@ -49,6 +50,9 @@ struct RootView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(model.problem ?? "")
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { model.sceneBecameActive() }
         }
         .task {
             #if DEBUG

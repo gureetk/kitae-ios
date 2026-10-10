@@ -16,6 +16,13 @@ struct KitaeApp: App {
             switch launch {
             case .ready(let model):
                 RootView(model: model)
+                    .overlay {
+                        #if DEBUG
+                        if let page = DebugLaunch.galleryPage {
+                            RestActivityGallery(page: page)
+                        }
+                        #endif
+                    }
             case .failed(let message):
                 ContentUnavailableView {
                     Label("Kitae can't open its data", systemImage: "exclamationmark.triangle")
@@ -37,7 +44,7 @@ enum Launch {
             #if DEBUG
             // Example data for screenshots, kept away from the real database.
             if DebugLaunch.usesExampleData {
-                let model = AppModel(database: try .inMemory())
+                let model = AppModel(database: try .inMemory(), restStore: .none, restAlerts: false)
                 DebugLaunch.prepare(model)
                 return .ready(model)
             }

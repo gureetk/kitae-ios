@@ -6,7 +6,8 @@ import Observation
 import os
 
 /// What the whole app is showing: the plans, the day that's up next, and the workout in
-/// progress. Everything comes from the database and goes straight back into it.
+/// progress. Everything comes from the database and goes straight back into it. While a rest
+/// is going, it's also on the Lock Screen, and an alert says when it's over.
 @Observable
 final class AppModel {
     let database: KitaeDatabase
@@ -22,7 +23,13 @@ final class AppModel {
     private var hadDoneSets = false
     /// A day picked on Today instead of the one up next.
     var pickedDayID: TrainingDay.ID?
-    private(set) var workout: Workout?
+    private(set) var workout: Workout? {
+        didSet {
+            guard oldValue !== workout else { return }
+            workout?.onChange = { [weak self] in self?.workoutChanged() }
+            workoutChanged()
+        }
+    }
     var isWorkoutPresented = false
     var weightFormatter = WeightFormatter()
     var defaultRestSeconds = 90
@@ -32,11 +39,26 @@ final class AppModel {
     /// The time, which tests can set.
     @ObservationIgnored var clock: () -> Date = { .now }
 
+    private let restStore: RestTimerStore
+    private let liveActivity: LiveRestActivity?
+    private let restAlerts: RestAlerts?
+
     private static let log = Logger(subsystem: "ca.gureet.kitae", category: "app")
 
-    init(database: KitaeDatabase) {
+    /// - Parameters:
+    ///   - restStore: Where the rest timer is kept while Kitae is closed.
+    ///   - liveActivities: Whether rests show on the Lock Screen and in the Dynamic Island.
+    ///   - restAlerts: Whether a rest that runs out sets off an alert.
+    init(database: KitaeDatabase, restStore: RestTimerStore = .standard, liveActivities: Bool = true, restAlerts: Bool = true) {
         self.database = database
+        self.restStore = restStore
+        liveActivity = liveActivities ? LiveRestActivity() : nil
+        self.restAlerts = restAlerts ? RestAlerts() : nil
         reload()
+        self.restAlerts?.onAllowed = { [weak self] in self?.workoutChanged() }
+        if liveActivities {
+            RestTimerRemote.perform = { [weak self] action in await self?.perform(action) }
+        }
     }
 
     var days: [TrainingDay] { currentPlan?.days ?? [] }
@@ -153,9 +175,36 @@ final class AppModel {
         try Workout(
             id: id,
             database: database,
+            restStore: restStore,
             defaultRestSeconds: defaultRestSeconds,
             defaultWeightKg: weightFormatter.unit.defaultWeightKg
         )
+    }
+
+    // MARK: The rest timer outside Kitae
+
+    /// A button on the Lock Screen or in the Dynamic Island. Returns once the Lock Screen
+    /// has the change, as iOS may suspend Kitae again straight after.
+    func perform(_ action: RestTimerAction) async {
+        guard let workout else { return }
+        switch action {
+        case .pause: workout.pauseRest()
+        case .resume: workout.resumeRest()
+        case .add(let seconds): workout.addRest(TimeInterval(seconds))
+        case .skip: workout.skipRest()
+        }
+        await liveActivity?.lastChange?.value
+    }
+
+    /// Catches the Lock Screen up when Kitae comes back, as Live Activities can only start
+    /// while Kitae is open.
+    func sceneBecameActive() {
+        workoutChanged()
+    }
+
+    private func workoutChanged() {
+        liveActivity?.update(for: workout, formatter: weightFormatter)
+        restAlerts?.update(for: workout?.rest)
     }
 
     private func report(_ error: any Error, _ message: String) {

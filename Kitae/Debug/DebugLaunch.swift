@@ -6,8 +6,9 @@ import Foundation
 import os
 
 /// Opens a screen straight away in debug builds, for screenshots: launch with
-/// `-KitaeScreen today`, `workout`, `typing`, `finish`, `options`, `minimized` or `switch`.
-/// These use a database in memory, so the real one isn't touched.
+/// `-KitaeScreen today`, `workout`, `typing`, `finish`, `options`, `minimized` or `switch`,
+/// or `activity` and `activitystates` for the Lock Screen and Dynamic Island rest timer.
+/// These use a database in memory, so the real one isn't touched, and they don't ask for alerts.
 enum DebugLaunch {
     static let screen = UserDefaults.standard.string(forKey: "KitaeScreen")
     private static let log = Logger(subsystem: "ca.gureet.kitae", category: "debug")
@@ -21,7 +22,12 @@ enum DebugLaunch {
     /// Whether this launch is for a screenshot.
     static var usesExampleData: Bool {
         guard let screen else { return false }
-        return screen == "today" || workoutScreens.contains(screen)
+        return screen == "today" || workoutScreens.contains(screen) || galleryPage != nil
+    }
+
+    /// The rest timer's Lock Screen and Dynamic Island looks, drawn in the app.
+    static var galleryPage: String? {
+        ["activity", "activitystates"].contains(screen ?? "") ? screen : nil
     }
 
     /// True the first time a screen asks, so it only opens once per launch.

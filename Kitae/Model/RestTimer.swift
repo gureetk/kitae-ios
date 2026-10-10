@@ -5,7 +5,7 @@ import Foundation
 
 /// The rest between sets. It counts down to a moment rather than ticking, so it stays
 /// right while the app is in the background.
-nonisolated struct RestTimer: Equatable, Sendable {
+nonisolated struct RestTimer: Codable, Equatable, Sendable {
     /// When the rest ends, while it's counting down.
     private(set) var endsAt: Date?
     /// The time left, while it's paused.
