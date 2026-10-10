@@ -6,9 +6,21 @@ import GRDB
 /// Plans and their days, read and written the way Kitae for Android does
 /// (its `PlanDao`, `PlanHistoryDao` and `RoutineDao`). A day is a routine in the database.
 nonisolated enum Plans {
+    /// Every plan with how many days and exercises it has, oldest first.
     static func all(_ db: Database) throws -> [PlanSummary] {
-        try Row.fetchAll(db, sql: "SELECT `id`, `name` FROM `plans`").map { row in
-            PlanSummary(id: row["id"], name: row["name"])
+        try Row.fetchAll(db, sql: """
+            SELECT `plans`.`id`, `plans`.`name`,
+            (SELECT COUNT(*)
+            FROM `routines`
+            WHERE `routines`.`planId` = `plans`.`id`) AS `dayCount`,
+            (SELECT COUNT(DISTINCT `routine_exercises`.`exerciseId`)
+            FROM `routine_exercises`
+            INNER JOIN `routines` ON `routines`.`id` = `routine_exercises`.`routineId`
+            WHERE `routines`.`planId` = `plans`.`id`) AS `exerciseCount`
+            FROM `plans`
+            ORDER BY `plans`.`id` ASC
+            """).map { row in
+            PlanSummary(id: row["id"], name: row["name"], dayCount: row["dayCount"], exerciseCount: row["exerciseCount"])
         }
     }
 

@@ -117,7 +117,7 @@ struct SeedTests {
     static let today = 20_736
 
     @Test func startsWithAndroidsExercises() throws {
-        let database = try KitaeDatabase.inMemory(today: Self.today)
+        let database = try KitaeDatabase.inMemory()
         let (count, firstID, lastID, withSteps) = try database.read { db in
             (
                 try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM exercises") ?? 0,
@@ -132,8 +132,26 @@ struct SeedTests {
         #expect(withSteps == 75)
     }
 
-    @Test func followsTheStarterPlanFromToday() throws {
-        let database = try KitaeDatabase.inMemory(today: Self.today)
+    @Test func noPlanIsFollowedAtFirst() throws {
+        let database = try KitaeDatabase.inMemory()
+        let (current, history, plans) = try database.read { db in
+            (
+                try Plans.currentID(db),
+                try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM plan_history"),
+                try Plans.all(db)
+            )
+        }
+        #expect(current == nil)
+        #expect(history == 0)
+        #expect(plans.map(\.name) == ["Push Pull Leg"])
+        #expect(plans.first?.dayCount == 5)
+        // Tricep Push Down is in two of the days.
+        #expect(plans.first?.exerciseCount == 23)
+        #expect(plans.first?.sizeLabel == "5 days · 23 exercises")
+    }
+
+    @Test func followsTheStarterPlanOnceChosen() throws {
+        let database = try KitaeDatabase.followingStarterPlan(today: Self.today)
         let (plan, history) = try database.read { db in
             (
                 try Plans.currentID(db).flatMap { try Plans.plan(db, id: $0) },
@@ -153,7 +171,7 @@ struct SeedTests {
     }
 
     @Test func switchingPlansEndsTheCurrentOne() throws {
-        let database = try KitaeDatabase.inMemory(today: Self.today)
+        let database = try KitaeDatabase.followingStarterPlan(today: Self.today)
         let rows = try database.write { db in
             try db.execute(sql: "INSERT INTO plans (name) VALUES ('Upper Lower')")
             try Plans.setCurrent(db, planID: db.lastInsertedRowID, today: Self.today + 3)

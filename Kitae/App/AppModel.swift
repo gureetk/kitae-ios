@@ -31,6 +31,8 @@ final class AppModel {
         }
     }
     var isWorkoutPresented = false
+    /// Whether the list of plans is showing.
+    var isChoosingPlan = false
     var weightFormatter = WeightFormatter()
     var defaultRestSeconds = 90
     /// Something that went wrong, to tell people about.
@@ -103,6 +105,7 @@ final class AppModel {
 
     /// Follows another plan from today.
     func selectPlan(_ id: Plan.ID) {
+        isChoosingPlan = false
         guard id != currentPlan?.id else { return }
         let today = EpochDay.of(clock())
         do {
@@ -112,6 +115,51 @@ final class AppModel {
         }
         pickedDayID = nil
         reload()
+    }
+
+    /// Opens the list of plans while no plan is followed, as Kitae for Android does on first
+    /// launch.
+    func askForPlanIfNeeded() {
+        if currentPlan == nil { isChoosingPlan = true }
+    }
+
+    // MARK: Editing plans
+
+    /// A new, empty plan. Throws a `NameProblem` if the name can't be used.
+    func createPlan(named name: String) throws -> Plan.ID {
+        let id = try database.write { db in try Plans.create(db, name: name) }
+        reload()
+        return id
+    }
+
+    /// Whether a plan can be deleted: not while one of its days is being done.
+    func canDelete(_ planID: Plan.ID) -> Bool {
+        workout?.planID != planID
+    }
+
+    func deletePlan(_ planID: Plan.ID) {
+        guard canDelete(planID) else { return }
+        do {
+            try database.write { db in try Plans.delete(db, planID: planID) }
+        } catch {
+            report(error, "Couldn't delete the plan")
+        }
+        pickedDayID = nil
+        reload()
+    }
+
+    func planEditor(for route: PlanEditRoute) -> PlanEditor {
+        let editor = PlanEditor(
+            route: route,
+            database: database,
+            defaultSet: SetDraft(reps: 12, weightKg: weightFormatter.unit.defaultWeightKg),
+            workout: workout
+        )
+        editor.onChange = { [weak self] in
+            self?.reload()
+            self?.workout?.reload()
+        }
+        return editor
     }
 
     /// Starts a workout of `day`, or opens it if it's the one in progress.

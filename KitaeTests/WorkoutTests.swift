@@ -16,7 +16,7 @@ struct SessionTests {
     let plan: Plan
 
     init() throws {
-        database = try KitaeDatabase.inMemory(today: Self.today)
+        database = try KitaeDatabase.followingStarterPlan(today: Self.today)
         plan = try #require(try database.read { db in try Plans.currentID(db).flatMap { try Plans.plan(db, id: $0) } })
     }
 
@@ -229,7 +229,7 @@ struct AppModelTests {
     let model: AppModel
 
     init() throws {
-        model = AppModel(database: try KitaeDatabase.inMemory(), restStore: .none, liveActivities: false, restAlerts: false)
+        model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: .none, liveActivities: false, restAlerts: false)
     }
 
     @Test func todayOffersTheFirstDayAtFirst() {
@@ -237,6 +237,23 @@ struct AppModelTests {
         #expect(model.selectedDay?.name == "Push A")
         #expect(model.hasDoneSets == false)
         #expect(model.workout == nil)
+    }
+
+    @Test func aNewDatabaseAsksForAPlan() throws {
+        let fresh = AppModel(database: try KitaeDatabase.inMemory(), restStore: .none, liveActivities: false, restAlerts: false)
+        #expect(fresh.currentPlan == nil)
+        #expect(fresh.selectedDay == nil)
+        #expect(fresh.plans.map(\.name) == ["Push Pull Leg"])
+        #expect(fresh.isChoosingPlan == false)
+        fresh.askForPlanIfNeeded()
+        #expect(fresh.isChoosingPlan)
+        fresh.selectPlan(fresh.plans[0].id)
+        #expect(fresh.isChoosingPlan == false)
+        #expect(fresh.selectedDay?.name == "Push A")
+
+        // With a plan, nothing opens by itself.
+        model.askForPlanIfNeeded()
+        #expect(model.isChoosingPlan == false)
     }
 
     @Test func finishingMovesOnToTheNextDay() throws {

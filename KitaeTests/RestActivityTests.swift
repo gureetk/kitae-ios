@@ -13,7 +13,7 @@ struct RestActivityTests {
     let model: AppModel
 
     init() throws {
-        model = AppModel(database: try KitaeDatabase.inMemory(), restStore: store, liveActivities: false, restAlerts: false)
+        model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: store, liveActivities: false, restAlerts: false)
     }
 
     private func startResting() throws -> Workout {

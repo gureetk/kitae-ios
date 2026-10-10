@@ -85,13 +85,8 @@ final class LiveRestActivity {
         )
     }
 
-    /// A set's reps and weight like "10 × 17.5 kg", or "12 reps" without weight.
-    /// Isometric exercises count seconds.
+    /// A set's reps and weight like "10 × 17.5 kg".
     static func describe(_ set: WorkoutSet, of exercise: Exercise, formatter: WeightFormatter) -> String {
-        let amount = exercise.isIsometric ? "\(set.reps)s" : "\(set.reps)"
-        if set.weightKg > 0 {
-            return "\(amount) × \(formatter.string(kilograms: set.weightKg)) \(formatter.unit.symbol)"
-        }
-        return exercise.isIsometric ? amount : counted(set.reps, "rep", "reps")
+        formatter.summary(reps: set.reps, kilograms: set.weightKg, isIsometric: exercise.isIsometric)
     }
 }

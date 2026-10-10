@@ -22,23 +22,3 @@ struct ComingSoonTab: View {
         }
     }
 }
-
-struct ComingSoonSheet: View {
-    let title: String
-    let message: String
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ContentUnavailableView(title, systemImage: "hammer", description: Text(message))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.paper)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done", systemImage: "checkmark") { dismiss() }
-                    }
-                }
-        }
-        .presentationDetents([.medium])
-    }
-}

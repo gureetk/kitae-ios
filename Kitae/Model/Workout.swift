@@ -31,6 +31,8 @@ nonisolated struct WorkoutExercise: Identifiable, Hashable, Sendable {
 @Observable
 final class Workout: Identifiable {
     let id: Int64
+    /// The plan this workout is from. nil if the plan was deleted.
+    let planID: Int64?
     /// The plan's day this workout is of. nil if the day was deleted.
     let dayID: Int64?
     let dayName: String
@@ -63,6 +65,7 @@ final class Workout: Identifiable {
     ) throws {
         guard let session = try database.read({ db in try Sessions.session(db, id: id) }) else { return nil }
         self.id = id
+        planID = session.planID
         dayID = session.dayID
         dayName = session.dayName ?? "Workout"
         startedAt = session.startedAt.map(Date.init(epochMilliseconds:)) ?? EpochDay.date(session.date)
@@ -148,6 +151,11 @@ final class Workout: Identifiable {
 
     func deleteSet(_ id: WorkoutSet.ID) {
         save { db in try Sessions.deleteSet(db, setID: id) }
+    }
+
+    /// Reads the sets again, after the day's plan was edited.
+    func reload() {
+        save { _ in }
     }
 
     /// Saves a change, then reads the sets back.

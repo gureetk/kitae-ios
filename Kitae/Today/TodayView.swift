@@ -10,7 +10,8 @@ struct TodayView: View {
     /// The day to start once the workout in progress is finished.
     @State private var switchingTo: TrainingDay?
     @State private var finishQuestion: FinishQuestion?
-    @State private var showsPlanEditor = false
+    /// The plan being edited, pushed over Today.
+    @State private var editing: PlanEditor?
 
     var body: some View {
         NavigationStack {
@@ -41,17 +42,20 @@ struct TodayView: View {
                     } description: {
                         Text("Choose a plan to follow, and Kitae lines up its days for you.")
                     } actions: {
-                        Menu("Choose a plan") {
-                            ForEach(model.plans) { plan in
-                                Button(plan.name) { model.selectPlan(plan.id) }
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
+                        Button("Choose a plan") { model.isChoosingPlan = true }
+                            .buttonStyle(.borderedProminent)
                     }
                     .padding(.top, 80)
                 } else {
-                    ContentUnavailableView("No days yet", systemImage: "calendar", description: Text("Add a training day to this plan to start."))
-                        .padding(.top, 80)
+                    ContentUnavailableView {
+                        Label("No days yet", systemImage: "calendar")
+                    } description: {
+                        Text("Add a training day to this plan to start.")
+                    } actions: {
+                        Button("Edit plan") { edit(nil) }
+                            .buttonStyle(.borderedProminent)
+                    }
+                    .padding(.top, 80)
                 }
             }
             .scrollIndicators(.hidden)
@@ -61,13 +65,13 @@ struct TodayView: View {
                 if let day = model.selectedDay {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Edit \(day.name)", systemImage: "pencil") {
-                            showsPlanEditor = true
+                            edit(day)
                         }
                     }
                 }
             }
-            .sheet(isPresented: $showsPlanEditor) {
-                ComingSoonSheet(title: "Plan editor", message: "Editing plans comes in a later batch.")
+            .navigationDestination(item: $editing) { editor in
+                PlanEditView(editor: editor)
             }
         }
         .task { await openDebugScreen() }
@@ -128,7 +132,7 @@ struct TodayView: View {
         let isEmpty = day.exercises.isEmpty && !continues
         return Button {
             if isEmpty {
-                showsPlanEditor = true
+                edit(day)
             } else if let workout = model.workout, workout.dayID != day.id {
                 switchingTo = day
                 finishQuestion = FinishQuestion.first(for: workout, startingAnotherDay: true)
@@ -180,6 +184,12 @@ struct TodayView: View {
         }
     }
 
+    /// Opens the plan editor on a day of the current plan.
+    private func edit(_ day: TrainingDay?) {
+        guard let plan = model.currentPlan else { return }
+        editing = model.planEditor(for: PlanEditRoute(planID: plan.id, dayID: day?.id))
+    }
+
     private var planSelection: Binding<Plan.ID?> {
         Binding(
             get: { model.currentPlan?.id },
@@ -199,6 +209,11 @@ struct TodayView: View {
     private var planMenu: some View {
         Menu {
             planPicker
+            Section {
+                Button("All plans", systemImage: "list.bullet") {
+                    model.isChoosingPlan = true
+                }
+            }
         } label: {
             HStack(spacing: 6) {
                 Text(model.currentPlan?.name ?? "Plans")
@@ -214,8 +229,21 @@ struct TodayView: View {
 
 extension TodayView {
     /// `-KitaeScreen switch`: picks another day while the example workout is going and taps Start.
+    /// `planedit`, `planset`, `addexercise` and `newday` open the plan editor on Today's day, and
+    /// `firstday` opens it on a new plan.
     private func openDebugScreen() async {
         #if DEBUG
+        if DebugLaunch.screen == "firstday", DebugLaunch.consume("firstday"),
+           let id = try? model.createPlan(named: "Strength") {
+            try? await Task.sleep(for: .milliseconds(500))
+            editing = model.planEditor(for: PlanEditRoute(planID: id))
+            return
+        }
+        if DebugLaunch.opensPlanEditor, DebugLaunch.consume("editor") {
+            try? await Task.sleep(for: .milliseconds(500))
+            edit(model.selectedDay)
+            return
+        }
         guard DebugLaunch.screen == "switch", DebugLaunch.consume("switch"), let workout = model.workout,
               let next = model.days.first(where: { $0.id != workout.dayID }) else { return }
         try? await Task.sleep(for: .milliseconds(700))

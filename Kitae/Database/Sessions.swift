@@ -17,6 +17,7 @@ nonisolated enum FinishMode: Sendable {
 /// A workout that hasn't been finished.
 nonisolated struct ActiveSession: Hashable, Sendable {
     var id: Int64
+    var planID: Int64?
     var dayID: Int64?
     var dayName: String?
     var startedAt: Int64?
@@ -317,6 +318,7 @@ nonisolated extension ActiveSession {
     init(row: Row) {
         self.init(
             id: row["id"],
+            planID: row["planId"],
             dayID: row["routineId"],
             dayName: row["routineName"],
             startedAt: row["startedAt"],

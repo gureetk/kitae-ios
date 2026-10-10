@@ -111,6 +111,10 @@ nonisolated struct PlannedSet: Identifiable, Hashable, Sendable {
     var weightKg: Double
     /// Rest after this set. nil uses the exercise's rest, or the default.
     var restSeconds: Int?
+
+    var draft: SetDraft {
+        SetDraft(reps: reps, weightKg: weightKg, type: type, restSeconds: restSeconds)
+    }
 }
 
 nonisolated struct DayExercise: Identifiable, Hashable, Sendable {
@@ -132,12 +136,32 @@ nonisolated struct Plan: Identifiable, Hashable, Sendable {
     var id: Int64
     var name: String
     var days: [TrainingDay]
+
+    /// Different exercises across the plan's days.
+    var exerciseCount: Int {
+        Set(days.flatMap { $0.exercises.map(\.exercise.id) }).count
+    }
+
+    /// "5 days · 23 exercises".
+    var sizeLabel: String {
+        planSizeLabel(days: days.count, exercises: exerciseCount)
+    }
 }
 
-/// A plan's name, for picking one.
+/// A plan as the list of plans shows it.
 nonisolated struct PlanSummary: Identifiable, Hashable, Sendable {
     var id: Int64
     var name: String
+    var dayCount = 0
+    var exerciseCount = 0
+
+    var sizeLabel: String {
+        planSizeLabel(days: dayCount, exercises: exerciseCount)
+    }
+}
+
+nonisolated func planSizeLabel(days: Int, exercises: Int) -> String {
+    "\(counted(days, "day", "days")) · \(counted(exercises, "exercise", "exercises"))"
 }
 
 /// New positions that put warm-ups in front of the other sets, keeping each group's order.
@@ -149,6 +173,16 @@ nonisolated func warmupsFirstSlots<T>(_ items: [T], slot: (T) -> Int, isWarmup: 
     return wanted.enumerated().compactMap { index, item in
         slot(item) == slots[index] ? nil : (item, slots[index])
     }
+}
+
+/// `items` in a new order, the way a list moves rows: the ones at `source` go in front of the
+/// one at `destination`, which counts from before the move.
+nonisolated func moved<T>(_ items: [T], from source: IndexSet, to destination: Int) -> [T] {
+    let moving = source.filter { items.indices.contains($0) }.map { items[$0] }
+    var rest = items.enumerated().filter { !source.contains($0.offset) }.map(\.element)
+    let index = destination - source.count(in: 0..<max(destination, 0))
+    rest.insert(contentsOf: moving, at: min(max(index, 0), rest.count))
+    return rest
 }
 
 /// "1 set", "15 sets". Kitae's text is English only for now.

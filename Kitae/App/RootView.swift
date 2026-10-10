@@ -41,6 +41,10 @@ struct RootView: View {
                     .environment(model)
             }
         }
+        .sheet(isPresented: $model.isChoosingPlan) {
+            PlansView()
+                .environment(model)
+        }
         .environment(model)
         .tint(.olive)
         .alert(
@@ -55,13 +59,14 @@ struct RootView: View {
             if phase == .active { model.sceneBecameActive() }
         }
         .task {
+            // A sheet or cover asked for before the first frame doesn't open, so wait a moment.
+            try? await Task.sleep(for: .milliseconds(400))
             #if DEBUG
-            // A cover asked for before the first frame doesn't open, so wait a moment.
             if DebugLaunch.opensWorkout {
-                try? await Task.sleep(for: .milliseconds(400))
                 model.isWorkoutPresented = true
             }
             #endif
+            model.askForPlanIfNeeded()
         }
     }
 }

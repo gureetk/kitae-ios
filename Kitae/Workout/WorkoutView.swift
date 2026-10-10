@@ -12,7 +12,8 @@ struct WorkoutView: View {
     @State private var optionsFor: SetOptionsTarget?
     @State private var finishQuestion: FinishQuestion?
     @State private var confirmsDiscard = false
-    @State private var showsPlanEditor = false
+    /// The workout's plan, being edited over the workout.
+    @State private var editing: PlanEditor?
 
     var body: some View {
         NavigationStack {
@@ -44,12 +45,12 @@ struct WorkoutView: View {
             } message: {
                 Text("This workout and its sets will be removed. Your plan stays the same.")
             }
+            .navigationDestination(item: $editing) { editor in
+                PlanEditView(editor: editor)
+            }
         }
         .sheet(item: $optionsFor) { target in
             SetOptionsSheet(workout: workout, target: target, defaultRestSeconds: model.defaultRestSeconds)
-        }
-        .sheet(isPresented: $showsPlanEditor) {
-            ComingSoonSheet(title: "Plan editor", message: "Editing plans comes in a later batch.")
         }
         .sensoryFeedback(.success, trigger: workout.doneCount) { old, new in new > old }
         .sensoryFeedback(.warning, trigger: workout.restsFinished)
@@ -152,8 +153,10 @@ struct WorkoutView: View {
             .accessibilityElement(children: .combine)
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
-            Button("Edit \(workout.dayName)", systemImage: "pencil") {
-                showsPlanEditor = true
+            if let planID = workout.planID {
+                Button("Edit \(workout.dayName)", systemImage: "pencil") {
+                    editing = model.planEditor(for: PlanEditRoute(planID: planID, dayID: workout.dayID))
+                }
             }
             Menu("More", systemImage: "ellipsis") {
                 Button("Discard workout", systemImage: "trash", role: .destructive) {
@@ -274,6 +277,10 @@ struct WorkoutView: View {
             startFinishing()
         case "options":
             if let set = firstUnfinished { optionsFor = SetOptionsTarget(id: set.id) }
+        case "workoutedit":
+            if let planID = workout.planID {
+                editing = model.planEditor(for: PlanEditRoute(planID: planID, dayID: workout.dayID))
+            }
         default:
             break
         }

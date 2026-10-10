@@ -14,50 +14,14 @@ struct SetOptionsSheet: View {
     let defaultRestSeconds: Int
     @Environment(\.dismiss) private var dismiss
 
-    private static let restChoices = [30, 45, 60, 75, 90, 120, 150, 180, 240, 300]
-
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    ForEach(SetType.allCases) { type in
-                        Button {
-                            workout.update(target.id) { $0.type = type }
-                        } label: {
-                            HStack(spacing: 14) {
-                                Text(type.letter ?? "01")
-                                    .font(.kitaeMono(15, relativeTo: .body, bold: true))
-                                    .foregroundStyle(.inkSoft)
-                                    .frame(width: 30, alignment: .leading)
-                                Text(type.name)
-                                    .foregroundStyle(.ink)
-                                Spacer()
-                                if set?.type == type {
-                                    Image(systemName: "checkmark")
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.olive)
-                                }
-                            }
-                            .contentShape(.rect)
-                        }
-                        .accessibilityAddTraits(set?.type == type ? .isSelected : [])
-                        .listRowBackground(Color.card)
-                    }
-                } header: {
-                    Text(".set type")
-                        .font(.kitaeMono(12, relativeTo: .caption))
-                        .textCase(nil)
+                SetTypeSection(selected: set?.type) { type in
+                    workout.update(target.id) { $0.type = type }
                 }
 
-                Section {
-                    Picker("Rest after this set", selection: restSelection) {
-                        Text("Default, \(restLabel(seconds: exerciseRest))").tag(Int?.none)
-                        ForEach(Self.restChoices, id: \.self) { seconds in
-                            Text(restLabel(seconds: seconds)).tag(Int?.some(seconds))
-                        }
-                    }
-                    .listRowBackground(Color.card)
-                }
+                RestSection(seconds: restSelection, usualSeconds: exerciseRest)
 
                 Section {
                     Button("Delete set", role: .destructive) {

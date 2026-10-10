@@ -21,6 +21,19 @@ struct SetLabelTests {
     }
 }
 
+struct MoveTests {
+    let items = ["a", "b", "c", "d", "e"]
+
+    @Test func movesLikeAList() {
+        #expect(moved(items, from: [0], to: 2) == ["b", "a", "c", "d", "e"])
+        #expect(moved(items, from: [4], to: 0) == ["e", "a", "b", "c", "d"])
+        #expect(moved(items, from: [1], to: 4) == ["a", "c", "d", "b", "e"])
+        #expect(moved(items, from: [1, 3], to: 5) == ["a", "c", "e", "b", "d"])
+        #expect(moved(items, from: [2], to: 2) == items)
+        #expect(moved(items, from: [2], to: 3) == items)
+    }
+}
+
 struct WeightFormatterTests {
     let point = WeightFormatter(decimals: .point)
 
@@ -39,6 +52,12 @@ struct WeightFormatterTests {
     @Test func automaticFollowsTheRegion() {
         #expect(WeightFormatter(decimals: .automatic, locale: Locale(identifier: "de_DE")).string(kilograms: 22.5) == "22,5")
         #expect(WeightFormatter(decimals: .automatic, locale: Locale(identifier: "en_CA")).string(kilograms: 22.5) == "22.5")
+    }
+
+    @Test func keyboardStepsKeepTheDecimalStyle() {
+        #expect(point.step(-2.5) == "−2.5")
+        #expect(point.step(5) == "+5")
+        #expect(WeightFormatter(decimals: .comma).step(2.5) == "+2,5")
     }
 
     @Test func readsAPointOrAComma() {

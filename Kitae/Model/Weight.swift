@@ -85,6 +85,16 @@ nonisolated struct WeightFormatter: Sendable {
         return "\(whole)\(separator)\(fraction < 10 ? "0" : "")\(fraction)"
     }
 
+    /// A −/+ step above the keyboard, like −2.5 or +5, with the decimal separator from Settings.
+    func step(_ value: Double) -> String {
+        let sign = value < 0 ? "−" : "+"
+        let tenths = Int((abs(value) * 10).rounded())
+        if tenths % 10 == 0 {
+            return "\(sign)\(tenths / 10)"
+        }
+        return "\(sign)\(tenths / 10)\(decimals.separator(for: locale))\(tenths % 10)"
+    }
+
     /// Reads a typed weight. A point and a comma both work as the decimal separator,
     /// whatever the setting, because the iPhone keypad shows the region's key.
     func kilograms(from text: String) -> Double? {
@@ -95,5 +105,15 @@ nonisolated struct WeightFormatter: Sendable {
             return nil
         }
         return unit.toKilograms(value)
+    }
+
+    /// A set's reps and weight like "10 × 17.5 kg", or "12 reps" without weight.
+    /// Isometric exercises count seconds instead of reps.
+    func summary(reps: Int, kilograms: Double, isIsometric: Bool = false) -> String {
+        let amount = isIsometric ? "\(reps)s" : "\(reps)"
+        if kilograms > 0 {
+            return "\(amount) × \(string(kilograms: kilograms)) \(unit.symbol)"
+        }
+        return isIsometric ? amount : counted(reps, "rep", "reps")
     }
 }

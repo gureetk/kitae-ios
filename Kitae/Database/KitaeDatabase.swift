@@ -30,10 +30,10 @@ nonisolated final class KitaeDatabase: Sendable {
     let writer: any DatabaseWriter
 
     /// Opens the database at `writer`, setting it up first if it's new.
-    init(_ writer: any DatabaseWriter, today: Int = EpochDay.of(.now)) throws {
+    init(_ writer: any DatabaseWriter) throws {
         self.writer = writer
         try writer.write { db in
-            try Self.prepare(db, today: today)
+            try Self.prepare(db)
         }
     }
 
@@ -52,8 +52,8 @@ nonisolated final class KitaeDatabase: Sendable {
     }
 
     /// A database that lives only in memory, for tests and debug screens.
-    static func inMemory(today: Int = EpochDay.of(.now)) throws -> KitaeDatabase {
-        try KitaeDatabase(DatabaseQueue(), today: today)
+    static func inMemory() throws -> KitaeDatabase {
+        try KitaeDatabase(DatabaseQueue())
     }
 
     func read<T>(_ value: (Database) throws -> T) throws -> T {
@@ -66,9 +66,10 @@ nonisolated final class KitaeDatabase: Sendable {
         try writer.write(updates)
     }
 
-    /// Makes the tables in a new database and adds the starter exercises and plan, which
-    /// becomes the current plan. An existing database has to be version 8.
-    private static func prepare(_ db: Database, today: Int) throws {
+    /// Makes the tables in a new database and adds the starter exercises and plan. No plan is
+    /// followed until people pick one, as in Kitae for Android. An existing database has to be
+    /// version 8.
+    private static func prepare(_ db: Database) throws {
         let version = try Int.fetchOne(db, sql: "PRAGMA user_version") ?? 0
         if version == Schema.version {
             let hash = try String.fetchOne(db, sql: "SELECT identity_hash FROM room_master_table WHERE id = 42")
@@ -80,8 +81,6 @@ nonisolated final class KitaeDatabase: Sendable {
         guard tables == 0 else { throw KitaeDatabaseError.notKitae }
 
         try Schema.create(db)
-        if let planID = try Seed.bundled().insert(db) {
-            try Plans.setCurrent(db, planID: planID, today: today)
-        }
+        try Seed.bundled().insert(db)
     }
 }
