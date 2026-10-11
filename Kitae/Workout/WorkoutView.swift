@@ -27,6 +27,8 @@ struct WorkoutView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 16)
             }
+            // Tapping anywhere but a field finishes typing. Fields and buttons take their own taps.
+            .onTapGesture { focus = nil }
             .scrollDismissesKeyboard(.interactively)
             .scrollIndicators(.hidden)
             .background(Color.paper)
@@ -81,6 +83,7 @@ struct WorkoutView: View {
                 .accessibilityHint("Shows how to do it and how it's gone")
                 Spacer()
                 Button {
+                    focus = nil
                     workout.addSet(to: exercise.id)
                 } label: {
                     Image(systemName: "plus")
@@ -104,8 +107,14 @@ struct WorkoutView: View {
                     focus: $focus,
                     onReps: { reps in workout.update(set.id) { $0.reps = reps } },
                     onWeight: { kg in workout.update(set.id) { $0.weightKg = kg } },
-                    onToggleDone: { workout.toggleDone(set.id) },
-                    onOptions: { optionsFor = SetOptionsTarget(id: set.id) }
+                    onToggleDone: {
+                        focus = nil
+                        workout.toggleDone(set.id)
+                    },
+                    onOptions: {
+                        focus = nil
+                        optionsFor = SetOptionsTarget(id: set.id)
+                    }
                 )
             }
         }
@@ -178,7 +187,7 @@ struct WorkoutView: View {
         }
     }
 
-    /// Steps for the field being typed in, and Next, just above the keyboard.
+    /// Steps for the field being typed in, and Done, just above the keyboard.
     private var keyboardBar: some View {
         HStack(spacing: 8) {
             HStack(spacing: 0) {
@@ -203,9 +212,9 @@ struct WorkoutView: View {
             Spacer(minLength: 0)
 
             Button {
-                focus = nextField
+                focus = nil
             } label: {
-                Text(nextField == nil ? "Done" : "Next")
+                Text("Done")
                     .font(.body.weight(.semibold))
                     .foregroundStyle(.olive)
                     .padding(.horizontal, 20)
@@ -228,19 +237,6 @@ struct WorkoutView: View {
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
-    }
-
-    private var orderedFields: [SetField] {
-        workout.exercises.flatMap { exercise in
-            exercise.sets.flatMap { [SetField.reps($0.id), SetField.weight($0.id)] }
-        }
-    }
-
-    private var nextField: SetField? {
-        guard let focus, let index = orderedFields.firstIndex(of: focus), index + 1 < orderedFields.count else {
-            return nil
-        }
-        return orderedFields[index + 1]
     }
 
     /// 5 or 2.5, written with the decimal separator from Settings.
