@@ -229,7 +229,7 @@ struct AppModelTests {
     let model: AppModel
 
     init() throws {
-        model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: .none, liveActivities: false, restAlerts: false)
+        model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: .none, settingsStore: .none, liveActivities: false, restAlerts: false)
     }
 
     @Test func todayOffersTheFirstDayAtFirst() {
@@ -240,7 +240,7 @@ struct AppModelTests {
     }
 
     @Test func aNewDatabaseAsksForAPlan() throws {
-        let fresh = AppModel(database: try KitaeDatabase.inMemory(), restStore: .none, liveActivities: false, restAlerts: false)
+        let fresh = AppModel(database: try KitaeDatabase.inMemory(), restStore: .none, settingsStore: .none, liveActivities: false, restAlerts: false)
         #expect(fresh.currentPlan == nil)
         #expect(fresh.selectedDay == nil)
         #expect(fresh.plans.map(\.name) == ["Push Pull Leg"])
@@ -282,7 +282,7 @@ struct AppModelTests {
         let workout = try #require(model.workout)
         workout.update(try #require(workout.exercises.first?.sets.first?.id)) { $0.weightKg = 18.75 }
 
-        let reopened = AppModel(database: model.database, restStore: .none, liveActivities: false, restAlerts: false)
+        let reopened = AppModel(database: model.database, restStore: .none, settingsStore: .none, liveActivities: false, restAlerts: false)
         let restored = try #require(reopened.workout)
         #expect(restored.id == workout.id)
         #expect(restored.exercises.first?.sets.first?.weightKg == 18.75)

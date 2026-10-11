@@ -254,7 +254,7 @@ struct PlanEditView: View {
                     .foregroundStyle(.ink)
                 Spacer(minLength: 8)
                 if let rest = set.restSeconds {
-                    Text("rest \(restLabel(seconds: rest))")
+                    Text("rest \(restSetting(seconds: rest))")
                         .font(.kitaeMono(12, relativeTo: .caption))
                         .foregroundStyle(.inkSoft)
                 }

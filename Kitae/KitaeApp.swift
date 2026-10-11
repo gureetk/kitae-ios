@@ -11,6 +11,16 @@ struct KitaeApp: App {
     init() {
         KitaeFonts.register()
         Self.styleLargeTitles()
+        Self.styleSegments()
+    }
+
+    /// Settings' kg / lb and decimals switches in Space Mono, as in the design.
+    private static func styleSegments() {
+        guard let regular = UIFont(name: KitaeFonts.monoRegular, size: 14),
+              let bold = UIFont(name: KitaeFonts.monoBold, size: 14) else { return }
+        let segments = UISegmentedControl.appearance()
+        segments.setTitleTextAttributes([.font: UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: regular)], for: .normal)
+        segments.setTitleTextAttributes([.font: UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: bold)], for: .selected)
     }
 
     /// Large titles, like History's, in Darker Grotesque as in the design.
@@ -59,12 +69,12 @@ enum Launch {
             #if DEBUG
             // Example data for screenshots, kept away from the real database.
             if DebugLaunch.usesExampleData {
-                let model = AppModel(database: try .inMemory(), restStore: .none, restAlerts: false)
+                let model = AppModel(database: try .inMemory(), restStore: .none, settingsStore: .none, restAlerts: false)
                 DebugLaunch.prepare(model)
                 return .ready(model)
             }
             #endif
-            return .ready(AppModel(database: try .app()))
+            return .ready(AppModel(database: try .app(), restStore: .standard, settingsStore: .standard))
         } catch {
             return .failed(error.localizedDescription)
         }

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import SwiftUI
+import UIKit
 
 enum AppTab: Hashable {
     case today
@@ -28,7 +29,7 @@ struct RootView: View {
                 ExercisesView()
             }
             Tab("You", systemImage: "person", value: .you) {
-                ComingSoonTab(title: "You", systemImage: "person", message: "Your plan, your stats, and settings.")
+                YouView()
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
@@ -58,6 +59,9 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { model.sceneBecameActive() }
         }
+        .onChange(of: model.settings.theme, initial: true) { _, theme in
+            Self.apply(theme)
+        }
         .task {
             // A sheet or cover asked for before the first frame doesn't open, so wait a moment.
             try? await Task.sleep(for: .milliseconds(400))
@@ -75,7 +79,24 @@ struct RootView: View {
         #if DEBUG
         if DebugLaunch.opensHistory { return .history }
         if DebugLaunch.opensExercises { return .exercises }
+        if DebugLaunch.opensYou { return .you }
         #endif
         return .today
+    }
+
+    /// Light or dark from Settings, or the phone's. Set on the windows rather than with
+    /// `preferredColorScheme`, so sheets, alerts and the workout follow straight away, also
+    /// when going back to the phone's.
+    private static func apply(_ theme: AppTheme) {
+        let style: UIUserInterfaceStyle = switch theme {
+        case .system: .unspecified
+        case .light: .light
+        case .dark: .dark
+        }
+        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+            for window in scene.windows {
+                window.overrideUserInterfaceStyle = style
+            }
+        }
     }
 }

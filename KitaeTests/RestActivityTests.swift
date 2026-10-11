@@ -13,7 +13,7 @@ struct RestActivityTests {
     let model: AppModel
 
     init() throws {
-        model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: store, liveActivities: false, restAlerts: false)
+        model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: store, settingsStore: .none, liveActivities: false, restAlerts: false)
     }
 
     private func startResting() throws -> Workout {
@@ -70,16 +70,16 @@ struct RestActivityTests {
     @Test func aRestCarriesOnAfterKitaeCloses() throws {
         let workout = try startResting()
         let endsAt = try #require(workout.rest.endsAt)
-        let reopened = AppModel(database: model.database, restStore: store, liveActivities: false, restAlerts: false)
+        let reopened = AppModel(database: model.database, restStore: store, settingsStore: .none, liveActivities: false, restAlerts: false)
         let restored = try #require(reopened.workout)
         #expect(restored.rest.endsAt == endsAt)
 
         workout.pauseRest()
-        let pausedAgain = AppModel(database: model.database, restStore: store, liveActivities: false, restAlerts: false)
+        let pausedAgain = AppModel(database: model.database, restStore: store, settingsStore: .none, liveActivities: false, restAlerts: false)
         #expect(pausedAgain.workout?.rest.isPaused == true)
 
         workout.skipRest()
-        let afterSkip = AppModel(database: model.database, restStore: store, liveActivities: false, restAlerts: false)
+        let afterSkip = AppModel(database: model.database, restStore: store, settingsStore: .none, liveActivities: false, restAlerts: false)
         #expect(afterSkip.workout?.rest.isActive == false)
     }
 

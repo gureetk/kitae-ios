@@ -53,6 +53,24 @@ nonisolated enum DecimalStyle: String, CaseIterable, Identifiable, Sendable {
 
     var id: Self { self }
 
+    /// As Settings shows it: Auto, 22.5 or 22,5.
+    var title: String {
+        switch self {
+        case .automatic: "Auto"
+        case .point: "22.5"
+        case .comma: "22,5"
+        }
+    }
+
+    /// What VoiceOver says for it.
+    var spokenName: String {
+        switch self {
+        case .automatic: "Automatic"
+        case .point: "Point"
+        case .comma: "Comma"
+        }
+    }
+
     func separator(for locale: Locale) -> String {
         switch self {
         case .automatic: locale.decimalSeparator ?? "."

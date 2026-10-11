@@ -64,7 +64,7 @@ struct ExerciseEditor: View {
 
                 Section {
                     Picker("Rest after each set", selection: $draft.restSeconds) {
-                        Text("Default, \(restLabel(seconds: model.defaultRestSeconds))").tag(Int?.none)
+                        Text("Default, \(restSetting(seconds: model.defaultRestSeconds))").tag(Int?.none)
                         ForEach(restChoices, id: \.self) { seconds in
                             Text(restLabel(seconds: seconds)).tag(Int?.some(seconds))
                         }

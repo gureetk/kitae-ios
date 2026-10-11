@@ -6,8 +6,9 @@ import Observation
 import os
 
 /// What the whole app is showing: the plans, the day that's up next, and the workout in
-/// progress. Everything comes from the database and goes straight back into it. While a rest
-/// is going, it's also on the Lock Screen, and an alert says when it's over.
+/// progress, and Settings. Everything comes from the database and goes straight back into it.
+/// While a rest is going, it's also on the Lock Screen, and an alert says when it's over unless
+/// Settings turn alerts off.
 @Observable
 final class AppModel {
     let database: KitaeDatabase
@@ -35,8 +36,10 @@ final class AppModel {
     var isChoosingPlan = false
     /// Goes up whenever workouts or plans may have changed, so History reads them again.
     private(set) var historyRevision = 0
-    var weightFormatter = WeightFormatter()
-    var defaultRestSeconds = 90
+    /// What Settings changes. Each change is saved straight away.
+    var settings: AppSettings {
+        didSet { settingsChanged(from: oldValue) }
+    }
     /// Something that went wrong, to tell people about.
     var problem: String?
 
@@ -44,6 +47,7 @@ final class AppModel {
     @ObservationIgnored var clock: () -> Date = { .now }
 
     private let restStore: RestTimerStore
+    private let settingsStore: SettingsStore
     private let liveActivity: LiveRestActivity?
     private let restAlerts: RestAlerts?
 
@@ -51,11 +55,20 @@ final class AppModel {
 
     /// - Parameters:
     ///   - restStore: Where the rest timer is kept while Kitae is closed.
+    ///   - settingsStore: Where Settings are kept.
     ///   - liveActivities: Whether rests show on the Lock Screen and in the Dynamic Island.
-    ///   - restAlerts: Whether a rest that runs out sets off an alert.
-    init(database: KitaeDatabase, restStore: RestTimerStore = .standard, liveActivities: Bool = true, restAlerts: Bool = true) {
+    ///   - restAlerts: Whether a rest that runs out can set off an alert. Settings can turn it off.
+    init(
+        database: KitaeDatabase,
+        restStore: RestTimerStore = .standard,
+        settingsStore: SettingsStore = .standard,
+        liveActivities: Bool = true,
+        restAlerts: Bool = true
+    ) {
         self.database = database
         self.restStore = restStore
+        self.settingsStore = settingsStore
+        settings = settingsStore.load()
         liveActivity = liveActivities ? LiveRestActivity() : nil
         self.restAlerts = restAlerts ? RestAlerts() : nil
         reload()
@@ -66,6 +79,14 @@ final class AppModel {
     }
 
     var days: [TrainingDay] { currentPlan?.days ?? [] }
+
+    /// How weights are written, from Settings.
+    var weightFormatter: WeightFormatter {
+        WeightFormatter(unit: settings.unit, decimals: settings.decimals)
+    }
+
+    /// The rest after a set without one of its own, from Settings. 0 is none.
+    var defaultRestSeconds: Int { settings.defaultRestSeconds }
 
     /// The day Today shows: the one picked, else the one in progress, else the one up next.
     var selectedDay: TrainingDay? {
@@ -303,7 +324,18 @@ final class AppModel {
 
     private func workoutChanged() {
         liveActivity?.update(for: workout, formatter: weightFormatter)
-        restAlerts?.update(for: workout?.rest)
+        restAlerts?.update(for: settings.restAlerts ? workout?.rest : nil)
+    }
+
+    // MARK: Settings
+
+    /// Saves Settings, and lets the workout in progress, the Lock Screen and the alert follow.
+    private func settingsChanged(from old: AppSettings) {
+        guard settings != old else { return }
+        settingsStore.save(settings)
+        workout?.defaultRestSeconds = settings.defaultRestSeconds
+        workout?.defaultWeightKg = settings.unit.defaultWeightKg
+        workoutChanged()
     }
 
     private func report(_ error: any Error, _ message: String) {

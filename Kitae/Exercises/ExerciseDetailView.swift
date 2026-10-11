@@ -93,7 +93,7 @@ struct ExerciseDetailView: View {
                 .accessibilityAddTraits(.isHeader)
             HStack(spacing: 8) {
                 chip(exercise.muscle?.name ?? exercise.target)
-                chip("rest \(restLabel(seconds: exercise.restSeconds ?? model.defaultRestSeconds))")
+                chip("rest \(restSetting(seconds: exercise.restSeconds ?? model.defaultRestSeconds))")
                 if exercise.isIsometric {
                     chip("held")
                 }

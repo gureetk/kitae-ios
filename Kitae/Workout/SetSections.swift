@@ -51,7 +51,7 @@ struct RestSection: View {
     var body: some View {
         Section {
             Picker("Rest after this set", selection: $seconds) {
-                Text("Default, \(restLabel(seconds: usualSeconds))").tag(Int?.none)
+                Text("Default, \(restSetting(seconds: usualSeconds))").tag(Int?.none)
                 ForEach(choices, id: \.self) { choice in
                     Text(restLabel(seconds: choice)).tag(Int?.some(choice))
                 }
