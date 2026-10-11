@@ -85,6 +85,16 @@ nonisolated struct WeightFormatter: Sendable {
         return "\(whole)\(separator)\(fraction < 10 ? "0" : "")\(fraction)"
     }
 
+    /// A set with its weight first, like "22.5 kg × 10", as an exercise's heaviest set is
+    /// shown. Without weight it's "12 reps", or "45s" for a hold.
+    func weightFirst(reps: Int, kilograms: Double, isIsometric: Bool = false) -> String {
+        let amount = isIsometric ? "\(reps)s" : "\(reps)"
+        if kilograms > 0 {
+            return "\(string(kilograms: kilograms)) \(unit.symbol) × \(amount)"
+        }
+        return isIsometric ? amount : counted(reps, "rep", "reps")
+    }
+
     /// A −/+ step above the keyboard, like −2.5 or +5, with the decimal separator from Settings.
     func step(_ value: Double) -> String {
         let sign = value < 0 ? "−" : "+"

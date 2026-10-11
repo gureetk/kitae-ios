@@ -14,7 +14,6 @@ struct WorkoutRecord {
 /// A past workout: what was done, set by set, and the workout of the same day before it.
 struct WorkoutDetailView: View {
     let id: Int64
-    @Binding var path: [HistoryRoute]
 
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -87,20 +86,22 @@ struct WorkoutDetailView: View {
     private func exerciseSection(_ exercise: WorkoutExercise) -> some View {
         let labels = setLabels(for: exercise.sets.map(\.type))
         return Section {
-            HStack(spacing: 10) {
-                Text(exercise.exercise.name)
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(.ink)
-                Spacer(minLength: 8)
-                Text(exercise.exercise.muscle?.name ?? exercise.exercise.target)
-                    .font(.footnote)
-                    .foregroundStyle(.inkSoft)
+            NavigationLink(value: AppRoute.exercise(exercise.id)) {
+                HStack(spacing: 10) {
+                    Text(exercise.exercise.name)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.ink)
+                    Spacer(minLength: 8)
+                    Text(exercise.exercise.muscle?.name ?? exercise.exercise.target)
+                        .font(.footnote)
+                        .foregroundStyle(.inkSoft)
+                }
+                .frame(minHeight: 54)
             }
-            .frame(minHeight: 54)
             .alignmentGuide(.listRowSeparatorLeading) { _ in 28 }
             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
             .listRowBackground(Color.card)
-            .accessibilityElement(children: .combine)
+            .accessibilityHint("Shows the exercise's page")
 
             ForEach(Array(exercise.sets.enumerated()), id: \.element.id) { index, set in
                 setRow(set, label: labels[index], of: exercise.exercise)
@@ -136,8 +137,8 @@ struct WorkoutDetailView: View {
     private var toolbar: some ToolbarContent {
         if let record, let previousID = record.previousID {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Previous \(record.summary.title)", systemImage: "clock.arrow.circlepath") {
-                    path.append(.workout(previousID))
+                NavigationLink(value: AppRoute.workout(previousID)) {
+                    Label("Previous \(record.summary.title)", systemImage: "clock.arrow.circlepath")
                 }
             }
         }

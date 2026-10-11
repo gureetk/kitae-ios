@@ -48,6 +48,7 @@ struct WorkoutView: View {
             .navigationDestination(item: $editing) { editor in
                 PlanEditView(editor: editor)
             }
+            .appRoutes()
         }
         .sheet(item: $optionsFor) { target in
             SetOptionsSheet(workout: workout, target: target, defaultRestSeconds: model.defaultRestSeconds)
@@ -63,10 +64,21 @@ struct WorkoutView: View {
         let labels = setLabels(for: exercise.sets.map(\.type))
         return VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(exercise.exercise.name)
-                    .font(.kitaeDisplay(26, relativeTo: .title2))
-                    .foregroundStyle(.olive)
-                    .accessibilityAddTraits(.isHeader)
+                NavigationLink(value: AppRoute.exercise(exercise.id)) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(exercise.exercise.name)
+                            .font(.kitaeDisplay(26, relativeTo: .title2))
+                            .foregroundStyle(.olive)
+                            .multilineTextAlignment(.leading)
+                        Image(systemName: "chevron.forward")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.inkFaint)
+                    }
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityHint("Shows how to do it and how it's gone")
                 Spacer()
                 Button {
                     workout.addSet(to: exercise.id)

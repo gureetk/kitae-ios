@@ -9,11 +9,14 @@ nonisolated enum NameProblem: Error, Equatable, LocalizedError {
     case empty
     /// Another plan has it. Plan names are unique, as in Kitae for Android.
     case taken
+    /// Another exercise has it, as Kitae for Android checks too.
+    case exerciseTaken
 
     var errorDescription: String? {
         switch self {
         case .empty: "Give it a name."
         case .taken: "Another plan already has that name."
+        case .exerciseTaken: "Another exercise already has that name."
         }
     }
 }
@@ -188,13 +191,5 @@ nonisolated extension Plans {
             VALUES (?, ?, ?, ?, ?, ?)
             """, arguments: [slotID, set.reps, set.weightKg, set.type.rawValue, position, set.restSeconds])
         return db.lastInsertedRowID
-    }
-}
-
-/// The exercises Kitae knows, its own and people's.
-nonisolated enum Exercises {
-    static func all(_ db: Database) throws -> [Exercise] {
-        try Row.fetchAll(db, sql: "SELECT * FROM `exercises` ORDER BY `name` COLLATE NOCASE ASC, `id` ASC")
-            .map(Exercise.init(row:))
     }
 }

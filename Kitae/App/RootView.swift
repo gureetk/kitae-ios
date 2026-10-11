@@ -25,7 +25,7 @@ struct RootView: View {
                 HistoryView()
             }
             Tab("Exercises", systemImage: "list.bullet", value: .exercises) {
-                ComingSoonTab(title: "Exercises", systemImage: "list.bullet", message: "Kitae's exercises, with how to do them and your progress.")
+                ExercisesView()
             }
             Tab("You", systemImage: "person", value: .you) {
                 ComingSoonTab(title: "You", systemImage: "person", message: "Your plan, your stats, and settings.")
@@ -74,6 +74,7 @@ struct RootView: View {
     private static var firstTab: AppTab {
         #if DEBUG
         if DebugLaunch.opensHistory { return .history }
+        if DebugLaunch.opensExercises { return .exercises }
         #endif
         return .today
     }

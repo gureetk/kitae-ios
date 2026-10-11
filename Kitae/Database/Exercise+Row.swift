@@ -11,7 +11,9 @@ nonisolated extension Exercise {
             name: row["name"],
             target: row["target"],
             isIsometric: row["isIsometric"],
-            restSeconds: row["restSeconds"]
+            restSeconds: row["restSeconds"],
+            reference: row["reference"],
+            instructions: row["instructions"]
         )
     }
 }

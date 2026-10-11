@@ -3,7 +3,8 @@
 
 import SwiftUI
 
-/// Picks an exercise to add to a day: search by name, or narrow it down by muscle.
+/// Picks an exercise to add to a day: search by name, narrow it down by muscle, or make a
+/// new one.
 struct ExercisePicker: View {
     let dayName: String
     /// The exercises the day has already. They're ticked and can't be added twice.
@@ -13,14 +14,12 @@ struct ExercisePicker: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var exercises: [Exercise] = []
+    @State private var hasLoaded = false
     @State private var search = ""
     @State private var muscle: MuscleGroup?
-
-    /// The order of the muscle chips and sections.
-    static let muscles: [MuscleGroup] = [
-        .chest, .upperBack, .lats, .shoulders, .biceps, .triceps,
-        .traps, .core, .quads, .hamstrings, .glutes, .calves,
-    ]
+    @State private var showsEditor = false
+    /// An exercise that was just made, to add once the editor is gone.
+    @State private var madeExercise: Exercise.ID?
 
     var body: some View {
         NavigationStack {
@@ -40,12 +39,12 @@ struct ExercisePicker: View {
             .scrollContentBackground(.hidden)
             .background(Color.paper)
             .overlay {
-                if groups.isEmpty, !exercises.isEmpty {
-                    ContentUnavailableView.search(text: search)
+                if hasLoaded, groups.isEmpty, !search.trimmingCharacters(in: .whitespaces).isEmpty {
+                    NoExerciseFound(search: search) { showsEditor = true }
                 }
             }
             .safeAreaBar(edge: .top) {
-                muscleChips
+                MuscleChips(selection: $muscle)
                     .padding(.vertical, 6)
             }
             .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search \(exercises.count) exercises")
@@ -55,7 +54,16 @@ struct ExercisePicker: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", systemImage: "xmark") { dismiss() }
                 }
+                ToolbarItem(placement: .primaryAction) {
+                    Button("New exercise", systemImage: "plus") { showsEditor = true }
+                }
             }
+        }
+        .sheet(isPresented: $showsEditor, onDismiss: addMadeExercise) {
+            ExerciseEditor(draft: ExerciseDraft(name: search.trimmingCharacters(in: .whitespaces), muscle: muscle ?? .chest)) { id in
+                madeExercise = id
+            }
+            .environment(model)
         }
         .task {
             do {
@@ -63,22 +71,12 @@ struct ExercisePicker: View {
             } catch {
                 model.problem = "Couldn't read the exercises. \(error.localizedDescription)"
             }
+            hasLoaded = true
         }
     }
 
-    private var muscleChips: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                DayChip(title: "All", isSelected: muscle == nil) { muscle = nil }
-                ForEach(Self.muscles) { group in
-                    DayChip(title: group.name, isSelected: muscle == group) {
-                        muscle = muscle == group ? nil : group
-                    }
-                }
-            }
-        }
-        .scrollIndicators(.hidden)
-        .contentMargins(.horizontal, 16, for: .scrollContent)
+    private var groups: [ExerciseGroup] {
+        exerciseGroups(exercises, muscle: muscle, search: search)
     }
 
     private func row(_ exercise: Exercise) -> some View {
@@ -103,28 +101,13 @@ struct ExercisePicker: View {
         .accessibilityValue(isAdded ? "Already in \(dayName)" : "")
     }
 
-    private var groups: [ExerciseGroup] {
-        let query = search.trimmingCharacters(in: .whitespaces)
-        let found = exercises.filter { exercise in
-            (muscle == nil || exercise.muscle == muscle)
-                && (query.isEmpty || exercise.name.localizedStandardContains(query))
-        }
-        var groups = Self.muscles.compactMap { group -> ExerciseGroup? in
-            let items = found.filter { $0.muscle == group }
-            return items.isEmpty ? nil : ExerciseGroup(title: group.name, exercises: items)
-        }
-        let others = found.filter { $0.muscle == nil }
-        if !others.isEmpty {
-            groups.append(ExerciseGroup(title: "Other", exercises: others))
-        }
-        return groups
+    /// Adds a new exercise to the day straight away, as it was made to be added.
+    private func addMadeExercise() {
+        guard let madeExercise else { return }
+        self.madeExercise = nil
+        let exercise = try? model.database.read { db in try Exercises.exercise(db, id: madeExercise) }
+        guard let exercise else { return }
+        onPick(exercise)
+        dismiss()
     }
-}
-
-/// The exercises of one muscle, as a section of the list.
-struct ExerciseGroup: Identifiable {
-    let title: String
-    let exercises: [Exercise]
-
-    var id: String { title }
 }

@@ -11,7 +11,8 @@ import os
 /// `plans` for the first launch and `newplan` for naming a new plan; or `planedit`, `planset`,
 /// `plansettyping`, `addexercise`, `newday` and `firstday` for the plan editor, and `editworkout` and
 /// `workoutedit` for it while a workout is going, from Today and from the workout; `history` and
-/// `workoutdetail` for History, with five weeks of example workouts.
+/// `workoutdetail` for History, and `exercises` and `exercise` for Exercises, with five weeks of
+/// example workouts.
 /// These use a database in memory, so the real one isn't touched, and they don't ask for alerts.
 enum DebugLaunch {
     static let screen = UserDefaults.standard.string(forKey: "KitaeScreen")
@@ -20,6 +21,7 @@ enum DebugLaunch {
         "workout", "typing", "finish", "options", "minimized", "switch", "editworkout", "workoutedit", "history",
     ]
     private static let historyScreens: Set = ["history", "workoutdetail"]
+    private static let exerciseScreens: Set = ["exercises", "exercise"]
     private static let editorScreens: Set = [
         "planedit", "planset", "plansettyping", "addexercise", "newday", "editworkout",
     ]
@@ -38,7 +40,7 @@ enum DebugLaunch {
         guard let screen else { return false }
         return screen == "today" || workoutScreens.contains(screen) || editorScreens.contains(screen)
             || newPlanScreens.contains(screen) || firstLaunchScreens.contains(screen)
-            || historyScreens.contains(screen) || galleryPage != nil
+            || historyScreens.contains(screen) || exerciseScreens.contains(screen) || galleryPage != nil
     }
 
     /// The rest timer's Lock Screen and Dynamic Island looks, drawn in the app.
@@ -49,6 +51,11 @@ enum DebugLaunch {
     /// Whether Kitae opens on History.
     static var opensHistory: Bool {
         historyScreens.contains(screen ?? "")
+    }
+
+    /// Whether Kitae opens on Exercises.
+    static var opensExercises: Bool {
+        exerciseScreens.contains(screen ?? "")
     }
 
     /// Whether Today opens the plan editor straight away.
@@ -69,7 +76,7 @@ enum DebugLaunch {
         if !firstLaunchScreens.contains(screen), let plan = model.plans.first {
             model.selectPlan(plan.id)
         }
-        if historyScreens.contains(screen) {
+        if historyScreens.contains(screen) || exerciseScreens.contains(screen) {
             addExampleHistory(to: model)
         }
         guard workoutScreens.contains(screen), let day = model.selectedDay else { return }

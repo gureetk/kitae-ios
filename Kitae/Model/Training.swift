@@ -88,8 +88,57 @@ nonisolated struct Exercise: Identifiable, Hashable, Sendable {
     var isIsometric = false
     /// Rest after each set of this exercise, unless the set has its own. nil uses the default.
     var restSeconds: Int?
+    /// A link to a video or page that shows it.
+    var reference: String?
+    /// How to do it, one step per line.
+    var instructions: String?
 
     var muscle: MuscleGroup? { MuscleGroup(rawValue: target) }
+
+    /// The instructions as steps, without numbers typed in front of them. Kitae for
+    /// Android's exercise page reads them the same way.
+    var steps: [String] {
+        (instructions ?? "")
+            .split(whereSeparator: \.isNewline)
+            .map { line in
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard let number = trimmed.firstRange(of: /^\d+[.)]\s*/) else { return trimmed }
+                return String(trimmed[number.upperBound...])
+            }
+            .filter { !$0.isEmpty }
+    }
+
+    /// The link to the reference, if it's a web address.
+    var referenceURL: URL? {
+        guard let reference, !reference.contains(where: \.isWhitespace), let url = URL(string: reference),
+              url.scheme == "https" || url.scheme == "http", let host = url.host(), host.contains(".")
+        else { return nil }
+        return url
+    }
+}
+
+/// An exercise's details while they're being edited.
+nonisolated struct ExerciseDraft: Hashable, Sendable {
+    var name = ""
+    var muscle: MuscleGroup = .chest
+    var isIsometric = false
+    var restSeconds: Int?
+    var instructions = ""
+    var reference = ""
+
+    init(name: String = "", muscle: MuscleGroup = .chest) {
+        self.name = name
+        self.muscle = muscle
+    }
+
+    init(_ exercise: Exercise) {
+        name = exercise.name
+        muscle = exercise.muscle ?? .chest
+        isIsometric = exercise.isIsometric
+        restSeconds = exercise.restSeconds
+        instructions = exercise.instructions ?? ""
+        reference = exercise.reference ?? ""
+    }
 }
 
 /// A set's values before it's saved. Kitae for Android's `SetDraft`.

@@ -143,6 +143,17 @@ nonisolated enum HistoryDates {
         return first.formatted(yearAndMonth(today).year == year ? monthStyle : monthStyle.year())
     }
 
+    /// "Wed, Oct 7", with the year when it isn't `today`'s.
+    static func short(_ day: Int, today: Int, locale: Locale = .current) -> String {
+        let format = style(locale).weekday(.abbreviated).month(.abbreviated).day()
+        return date(day).formatted(yearAndMonth(today).year == yearAndMonth(day).year ? format : format.year())
+    }
+
+    /// "Oct 7", for the ends of a chart.
+    static func dayAndMonth(_ day: Int, locale: Locale = .current) -> String {
+        date(day).formatted(style(locale).month(.abbreviated).day())
+    }
+
     /// "Wednesday, October 7", with the year when it isn't `today`'s.
     static func long(_ day: Int, today: Int, locale: Locale = .current) -> String {
         let format = style(locale).weekday(.wide).month(.wide).day()

@@ -3,17 +3,12 @@
 
 import SwiftUI
 
-/// Where History goes from its list.
-enum HistoryRoute: Hashable {
-    case workout(Int64)
-}
-
 /// The second tab: every workout, newest first, a month at a time.
 struct HistoryView: View {
     @Environment(AppModel.self) private var model
     @State private var months: [HistoryMonth] = []
     @State private var hasLoaded = false
-    @State private var path: [HistoryRoute] = []
+    @State private var path: [AppRoute] = []
     @State private var deleting: WorkoutSummary?
 
     var body: some View {
@@ -43,12 +38,7 @@ struct HistoryView: View {
                 }
             }
             .navigationTitle("History")
-            .navigationDestination(for: HistoryRoute.self) { route in
-                switch route {
-                case .workout(let id):
-                    WorkoutDetailView(id: id, path: $path)
-                }
-            }
+            .appRoutes()
             .confirmationDialog(
                 "Delete this workout?",
                 isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),

@@ -216,6 +216,41 @@ final class AppModel {
         close()
     }
 
+    // MARK: Exercises
+
+    /// Saves a new exercise, or an existing one's details, and returns its id. Throws a
+    /// `NameProblem` if another exercise has the name, or it's empty.
+    @discardableResult
+    func saveExercise(_ draft: ExerciseDraft, id: Exercise.ID?) throws -> Exercise.ID {
+        let saved = try database.write { db -> Exercise.ID in
+            guard let id else { return try Exercises.create(db, draft) }
+            try Exercises.update(db, id: id, draft)
+            return id
+        }
+        reload()
+        workout?.reload()
+        return saved
+    }
+
+    /// Whether an exercise can be deleted: not while it's part of the workout in progress.
+    func canDeleteExercise(_ id: Exercise.ID) -> Bool {
+        !(workout?.exercises.contains { $0.id == id } ?? false)
+    }
+
+    /// Deletes an exercise. It's taken out of every plan, and its sets out of past workouts.
+    func deleteExercise(_ id: Exercise.ID) {
+        guard canDeleteExercise(id) else { return }
+        do {
+            try database.write { db in try Exercises.delete(db, id: id) }
+        } catch {
+            report(error, "Couldn't delete the exercise")
+        }
+        reload()
+        workout?.reload()
+    }
+
+    // MARK: History
+
     /// Deletes a past workout and its sets. The plan stays the same. The workout in progress
     /// is discarded from the workout instead.
     func deleteWorkout(_ id: Int64) {
