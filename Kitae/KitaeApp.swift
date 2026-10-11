@@ -40,7 +40,7 @@ struct KitaeApp: App {
         WindowGroup {
             switch launch {
             case .ready(let model):
-                RootView(model: model)
+                StartingOver(model: model)
                     .overlay {
                         #if DEBUG
                         if let page = DebugLaunch.galleryPage {
@@ -56,6 +56,16 @@ struct KitaeApp: App {
                 }
             }
         }
+    }
+}
+
+/// Kitae's screens, made again from the start after a reset, as on a new install.
+private struct StartingOver: View {
+    let model: AppModel
+
+    var body: some View {
+        RootView(model: model)
+            .id(model.generation)
     }
 }
 

@@ -75,6 +75,14 @@ final class BackupController {
         problem = nil
     }
 
+    /// Forgets the chosen folder and the last backup, as on a new install. The backups
+    /// themselves stay where they are.
+    func forget() {
+        useOwnFolder()
+        defaults?.removeObject(forKey: Key.lastBackup)
+        lastBackup = nil
+    }
+
     /// The folder to back up into now, or nil if nothing is backed up.
     func folder() throws -> URL? {
         guard let ownFolder else { return nil }

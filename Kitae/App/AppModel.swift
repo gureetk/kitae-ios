@@ -36,6 +36,8 @@ final class AppModel {
     var isChoosingPlan = false
     /// Goes up whenever workouts or plans may have changed, so History reads them again.
     private(set) var historyRevision = 0
+    /// Goes up when Kitae is reset, so every screen starts over.
+    private(set) var generation = 0
     /// What Settings changes. Each change is saved straight away.
     var settings: AppSettings {
         didSet { settingsChanged(from: oldValue) }
@@ -304,6 +306,23 @@ final class AppModel {
         }
         pickedDayID = nil
         reload()
+    }
+
+    // MARK: Starting over
+
+    /// Erases every plan, workout, exercise and setting, so Kitae is as it was when it was
+    /// installed, like Kitae for Android's "Reset app". A workout in progress goes too. Backups
+    /// stay in their folder.
+    func reset() throws {
+        workout?.skipRest()
+        isWorkoutPresented = false
+        isChoosingPlan = false
+        try database.reset()
+        settings = AppSettings()
+        backups.forget()
+        pickedDayID = nil
+        reload()
+        generation += 1
     }
 
     // MARK: History

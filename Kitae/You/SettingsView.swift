@@ -6,8 +6,8 @@ import UIKit
 import UniformTypeIdentifiers
 import UserNotifications
 
-/// Units, decimals, rest, alerts and theme, backups, and about Kitae. Changes are saved
-/// straight away.
+/// Units, decimals, rest, alerts and theme, backups, starting over, and about Kitae. Changes
+/// are saved straight away.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
@@ -17,8 +17,8 @@ struct SettingsView: View {
     @State private var alertsDenied = false
     @State private var isImporting = false
     @State private var importing = ImportKind.backup
-    /// A backup picked in Files, waiting for "Restore".
-    @State private var restoreCandidate: URL?
+    /// Restoring a backup or resetting, waiting for an answer.
+    @State private var confirmation: Confirmation?
     @State private var activity: BackupActivity?
     @State private var notice: Notice?
 
@@ -92,6 +92,19 @@ struct SettingsView: View {
             backupSection
 
             Section {
+                Button("Reset Kitae", role: .destructive) {
+                    confirmation = .reset
+                }
+                .disabled(model.backups.isWorking)
+                .listRowBackground(Color.card)
+            } header: {
+                SectionCaption(".reset")
+            } footer: {
+                Text("Deletes all plans, workouts, exercises and settings, like a fresh install. Backups are kept.")
+                    .foregroundStyle(.inkSoft)
+            }
+
+            Section {
                 LabeledContent("Version") {
                     Text(Self.version)
                         .font(.kitaeMono(15, relativeTo: .body))
@@ -125,16 +138,16 @@ struct SettingsView: View {
             picked(result)
         }
         .confirmationDialog(
-            "Restore this backup?",
-            isPresented: Binding(get: { restoreCandidate != nil }, set: { if !$0 { restoreCandidate = nil } }),
+            confirmation?.title ?? "",
+            isPresented: Binding(get: { confirmation != nil }, set: { if !$0 { confirmation = nil } }),
             titleVisibility: .visible,
-            presenting: restoreCandidate
-        ) { url in
-            Button("Restore", role: .destructive) {
-                Task { await restore(url) }
+            presenting: confirmation
+        ) { question in
+            Button(question.action, role: .destructive) {
+                confirmed(question)
             }
-        } message: { url in
-            Text("Your plans, workouts, exercises and settings will be replaced by the ones in \(url.lastPathComponent). What's in Kitae now is saved first, as \(Backups.beforeRestoreName) in On My iPhone › Kitae.")
+        } message: { question in
+            Text(question.message)
         }
         .alert(
             notice?.title ?? "",
@@ -262,11 +275,24 @@ struct SettingsView: View {
                 // Asked once Files has gone, as a question asked while it's leaving doesn't show.
                 Task {
                     try? await Task.sleep(for: .milliseconds(400))
-                    restoreCandidate = url
+                    confirmation = .restore(url)
                 }
             }
         case .failure(let error):
             notice = Notice(title: "Couldn't open that", message: error.localizedDescription)
+        }
+    }
+
+    private func confirmed(_ confirmation: Confirmation) {
+        switch confirmation {
+        case .restore(let url):
+            Task { await restore(url) }
+        case .reset:
+            // Once the question has gone, as every screen is made again.
+            Task {
+                try? await Task.sleep(for: .milliseconds(350))
+                reset()
+            }
         }
     }
 
@@ -278,6 +304,15 @@ struct SettingsView: View {
             notice = Notice(title: "Backup restored", message: "Kitae now has the plans, workouts and exercises from \(url.lastPathComponent).")
         } catch {
             notice = Notice(title: "Couldn't restore the backup", message: error.localizedDescription)
+        }
+    }
+
+    /// Starts over. Kitae's screens are made again, so this one goes away.
+    private func reset() {
+        do {
+            try model.reset()
+        } catch {
+            notice = Notice(title: "Couldn't reset Kitae", message: error.localizedDescription)
         }
     }
 
@@ -327,6 +362,36 @@ private enum ImportKind {
 private enum BackupActivity {
     case backingUp
     case restoring
+}
+
+/// A question asked before something that can't be undone.
+private enum Confirmation {
+    /// Restoring the backup picked in Files.
+    case restore(URL)
+    case reset
+
+    var title: String {
+        switch self {
+        case .restore: "Restore this backup?"
+        case .reset: "Reset Kitae?"
+        }
+    }
+
+    var action: String {
+        switch self {
+        case .restore: "Restore"
+        case .reset: "Reset"
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .restore(let url):
+            "Your plans, workouts, exercises and settings will be replaced by the ones in \(url.lastPathComponent). What's in Kitae now is saved first, as \(Backups.beforeRestoreName) in On My iPhone › Kitae."
+        case .reset:
+            "This permanently deletes all your plans, workouts, exercises and settings, and Kitae starts again with its starter plan and exercises. Backups in your backup folder are kept."
+        }
+    }
 }
 
 /// An alert after backing up or restoring.

@@ -215,14 +215,7 @@ nonisolated enum Backups {
     static func replace(_ database: KitaeDatabase, with contents: BackupContents) throws {
         let source = try DatabaseQueue(path: contents.database.path)
         defer { try? source.close() }
-        // SQLite can only copy into a database like Kitae's if the pages are the same size.
-        let pageSize = try database.read { db in try Int.fetchOne(db, sql: "PRAGMA page_size") } ?? 4096
-        try source.writeWithoutTransaction { db in
-            guard try Int.fetchOne(db, sql: "PRAGMA page_size") != pageSize else { return }
-            try db.execute(sql: "PRAGMA page_size = \(pageSize)")
-            try db.execute(sql: "VACUUM")
-        }
-        try source.backup(to: database.writer)
+        try database.replaceContents(with: source)
     }
 
     /// Copies a file picked in Files, which may still have to come down from iCloud.

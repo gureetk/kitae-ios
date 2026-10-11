@@ -66,6 +66,32 @@ nonisolated final class KitaeDatabase: Sendable {
         try writer.write(updates)
     }
 
+    /// Makes this a new database again, while it stays open: Kitae's tables with the starter
+    /// exercises and plan, no plan followed, and nothing else.
+    func reset() throws {
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("reset-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let fresh = try DatabaseQueue(path: folder.appendingPathComponent("kenko_database").path)
+        defer { try? fresh.close() }
+        try fresh.write { db in try Self.prepare(db) }
+        try replaceContents(with: fresh)
+    }
+
+    /// Copies `source` over this database, while Kitae keeps it open. SQLite can only copy
+    /// into a database in write-ahead-log mode if the pages are the same size, so `source`'s
+    /// are made to match first.
+    func replaceContents(with source: DatabaseQueue) throws {
+        let pageSize = try read { db in try Int.fetchOne(db, sql: "PRAGMA page_size") } ?? 4096
+        try source.writeWithoutTransaction { db in
+            guard try Int.fetchOne(db, sql: "PRAGMA page_size") != pageSize else { return }
+            try db.execute(sql: "PRAGMA page_size = \(pageSize)")
+            try db.execute(sql: "VACUUM")
+        }
+        try source.backup(to: writer)
+    }
+
     /// Makes the tables in a new database and adds the starter exercises and plan. No plan is
     /// followed until people pick one, as in Kitae for Android. An existing database has to be
     /// version 8.
