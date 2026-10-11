@@ -174,6 +174,7 @@ struct SettingsTests {
                 database: try KitaeDatabase.followingStarterPlan(),
                 restStore: .none,
                 settingsStore: SettingsStore(defaults: defaults),
+                backups: .none,
                 liveActivities: false,
                 restAlerts: false
             )
@@ -187,6 +188,7 @@ struct SettingsTests {
                 database: model.database,
                 restStore: .none,
                 settingsStore: SettingsStore(defaults: defaults),
+                backups: .none,
                 liveActivities: false,
                 restAlerts: false
             )
@@ -196,7 +198,7 @@ struct SettingsTests {
     }
 
     @Test func theWorkoutFollowsTheDefaultRest() throws {
-        let model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: .none, settingsStore: .none, liveActivities: false, restAlerts: false)
+        let model = AppModel.testing(try KitaeDatabase.followingStarterPlan())
         let day = try #require(model.selectedDay)
         model.startWorkout(day)
         let workout = try #require(model.workout)

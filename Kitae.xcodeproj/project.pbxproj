@@ -67,6 +67,13 @@
 			);
 			target = AA786A4430781C0A00B2B000 /* KitaeWidgetsExtension */;
 		};
+		AA4B1C0E30790A1100B2B000 /* Exceptions for "Kitae" folder in "Kitae" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AA97175330781B1200707E87 /* Kitae */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -85,6 +92,9 @@
 		};
 		AA97175630781B1200707E87 /* Kitae */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AA4B1C0E30790A1100B2B000 /* Exceptions for "Kitae" folder in "Kitae" target */,
+			);
 			path = Kitae;
 			sourceTree = "<group>";
 		};
@@ -563,6 +573,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Kitae/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Kitae;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -601,6 +612,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Kitae/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Kitae;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";

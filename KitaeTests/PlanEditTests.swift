@@ -200,7 +200,7 @@ struct PlanEditorTests {
     let model: AppModel
 
     init() throws {
-        model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: .none, settingsStore: .none, liveActivities: false, restAlerts: false)
+        model = AppModel.testing(try KitaeDatabase.followingStarterPlan())
     }
 
     private func makeEditor(day index: Int? = 0) throws -> PlanEditor {

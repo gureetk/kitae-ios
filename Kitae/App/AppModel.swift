@@ -6,9 +6,9 @@ import Observation
 import os
 
 /// What the whole app is showing: the plans, the day that's up next, and the workout in
-/// progress, and Settings. Everything comes from the database and goes straight back into it.
-/// While a rest is going, it's also on the Lock Screen, and an alert says when it's over unless
-/// Settings turn alerts off.
+/// progress, Settings and backups. Everything comes from the database and goes straight back
+/// into it. While a rest is going, it's also on the Lock Screen, and an alert says when it's
+/// over unless Settings turn alerts off. Finishing a workout backs up, unless Settings say not to.
 @Observable
 final class AppModel {
     let database: KitaeDatabase
@@ -40,6 +40,10 @@ final class AppModel {
     var settings: AppSettings {
         didSet { settingsChanged(from: oldValue) }
     }
+    /// Where backups go and how the last one went.
+    let backups: BackupController
+    /// The backup made after the last workout, while it's being made.
+    @ObservationIgnored private(set) var backupAfterWorkout: Task<Void, Never>?
     /// Something that went wrong, to tell people about.
     var problem: String?
 
@@ -56,12 +60,14 @@ final class AppModel {
     /// - Parameters:
     ///   - restStore: Where the rest timer is kept while Kitae is closed.
     ///   - settingsStore: Where Settings are kept.
+    ///   - backups: Where backups go.
     ///   - liveActivities: Whether rests show on the Lock Screen and in the Dynamic Island.
     ///   - restAlerts: Whether a rest that runs out can set off an alert. Settings can turn it off.
     init(
         database: KitaeDatabase,
         restStore: RestTimerStore = .standard,
         settingsStore: SettingsStore = .standard,
+        backups: BackupController = .standard,
         liveActivities: Bool = true,
         restAlerts: Bool = true
     ) {
@@ -69,6 +75,7 @@ final class AppModel {
         self.restStore = restStore
         self.settingsStore = settingsStore
         settings = settingsStore.load()
+        self.backups = backups
         liveActivity = liveActivities ? LiveRestActivity() : nil
         self.restAlerts = restAlerts ? RestAlerts() : nil
         reload()
@@ -221,6 +228,9 @@ final class AppModel {
             return
         }
         close()
+        if settings.backUpAfterWorkouts {
+            backupAfterWorkout = Task { _ = await backUp() }
+        }
     }
 
     /// Removes the workout and its sets. The plan stays the same.
@@ -268,6 +278,32 @@ final class AppModel {
         }
         reload()
         workout?.reload()
+    }
+
+    // MARK: Backups
+
+    /// The settings a backup carries.
+    var backupPreferences: [String: PreferenceValue] {
+        settings.backupPreferences(planChosen: currentPlan != nil)
+    }
+
+    /// Backs up into the backup folder now. Returns whether it worked; if not,
+    /// `backups.problem` says why.
+    @discardableResult
+    func backUp() async -> Bool {
+        await backups.backUp(database, preferences: backupPreferences, at: clock())
+    }
+
+    /// Replaces plans, workouts and exercises with a backup's, from either app, and takes its
+    /// settings. Not while a workout is going.
+    func restoreBackup(from url: URL) async throws {
+        guard workout == nil else { throw BackupError.workoutInProgress }
+        let restored = try await backups.restore(url, into: database, currentPreferences: backupPreferences)
+        if let restored {
+            settings.apply(backup: restored)
+        }
+        pickedDayID = nil
+        reload()
     }
 
     // MARK: History

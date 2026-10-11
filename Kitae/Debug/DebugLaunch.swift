@@ -14,6 +14,7 @@ import os
 /// `workoutdetail` for History, `exercises` and `exercise` for Exercises, and `you` and `settings`
 /// for You, with five weeks of example workouts.
 /// These use a database in memory, so the real one isn't touched, and they don't ask for alerts.
+/// Their backups go into a temporary folder.
 enum DebugLaunch {
     static let screen = UserDefaults.standard.string(forKey: "KitaeScreen")
     private static let log = Logger(subsystem: "ca.gureet.kitae", category: "debug")
@@ -34,6 +35,13 @@ enum DebugLaunch {
 
     static func note(_ message: String) {
         log.notice("\(message, privacy: .public)")
+    }
+
+    /// Backups of the example data go into a temporary folder, away from real ones.
+    static var backups: BackupController {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("ExampleBackups", isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return BackupController(defaults: nil, ownFolder: folder)
     }
 
     /// Whether this launch is for a screenshot.

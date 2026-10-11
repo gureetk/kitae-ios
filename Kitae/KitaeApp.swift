@@ -69,12 +69,18 @@ enum Launch {
             #if DEBUG
             // Example data for screenshots, kept away from the real database.
             if DebugLaunch.usesExampleData {
-                let model = AppModel(database: try .inMemory(), restStore: .none, settingsStore: .none, restAlerts: false)
+                let model = AppModel(
+                    database: try .inMemory(),
+                    restStore: .none,
+                    settingsStore: .none,
+                    backups: DebugLaunch.backups,
+                    restAlerts: false
+                )
                 DebugLaunch.prepare(model)
                 return .ready(model)
             }
             #endif
-            return .ready(AppModel(database: try .app(), restStore: .standard, settingsStore: .standard))
+            return .ready(AppModel(database: try .app(), restStore: .standard, settingsStore: .standard, backups: .standard))
         } catch {
             return .failed(error.localizedDescription)
         }

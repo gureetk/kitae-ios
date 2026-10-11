@@ -211,7 +211,7 @@ struct ExerciseModelTests {
     let model: AppModel
 
     init() throws {
-        model = AppModel(database: try KitaeDatabase.followingStarterPlan(), restStore: .none, settingsStore: .none, liveActivities: false, restAlerts: false)
+        model = AppModel.testing(try KitaeDatabase.followingStarterPlan())
     }
 
     @Test func exercisesOfTheWorkoutStay() throws {

@@ -3,9 +3,11 @@
 
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 import UserNotifications
 
-/// Units, decimals, rest, alerts and theme, and about Kitae. Changes are saved straight away.
+/// Units, decimals, rest, alerts and theme, backups, and about Kitae. Changes are saved
+/// straight away.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
@@ -13,6 +15,12 @@ struct SettingsView: View {
     /// Whether alerts are turned off for Kitae in the Settings app, so the rest timer can't
     /// set one off.
     @State private var alertsDenied = false
+    @State private var isImporting = false
+    @State private var importing = ImportKind.backup
+    /// A backup picked in Files, waiting for "Restore".
+    @State private var restoreCandidate: URL?
+    @State private var activity: BackupActivity?
+    @State private var notice: Notice?
 
     static let sourceCode = URL(string: "https://codeberg.org/gureetk/kitae-ios")!
 
@@ -81,6 +89,8 @@ struct SettingsView: View {
                 SectionCaption(".appearance")
             }
 
+            backupSection
+
             Section {
                 LabeledContent("Version") {
                     Text(Self.version)
@@ -111,6 +121,31 @@ struct SettingsView: View {
         .scrollContentBackground(.hidden)
         .background(Color.paper)
         .navigationTitle("Settings")
+        .fileImporter(isPresented: $isImporting, allowedContentTypes: importing.contentTypes) { result in
+            picked(result)
+        }
+        .confirmationDialog(
+            "Restore this backup?",
+            isPresented: Binding(get: { restoreCandidate != nil }, set: { if !$0 { restoreCandidate = nil } }),
+            titleVisibility: .visible,
+            presenting: restoreCandidate
+        ) { url in
+            Button("Restore", role: .destructive) {
+                Task { await restore(url) }
+            }
+        } message: { url in
+            Text("Your plans, workouts, exercises and settings will be replaced by the ones in \(url.lastPathComponent). What's in Kitae now is saved first, as \(Backups.beforeRestoreName) in On My iPhone › Kitae.")
+        }
+        .alert(
+            notice?.title ?? "",
+            isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } }),
+            presenting: notice
+        ) { _ in
+            Button("OK", role: .cancel) {}
+        } message: { notice in
+            Text(notice.message)
+        }
+        .sensoryFeedback(.success, trigger: model.backups.lastBackup)
         .task { await checkAlerts() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
@@ -118,6 +153,135 @@ struct SettingsView: View {
             }
         }
     }
+
+    // MARK: Backups
+
+    private var backupSection: some View {
+        @Bindable var model = model
+        return Section {
+            Toggle("Back up after each workout", isOn: $model.settings.backUpAfterWorkouts)
+                .listRowBackground(Color.card)
+
+            Button {
+                importing = .folder
+                isImporting = true
+            } label: {
+                HStack(spacing: 8) {
+                    Text("Backup folder")
+                        .foregroundStyle(.ink)
+                    Spacer(minLength: 8)
+                    Text(model.backups.folderName)
+                        .foregroundStyle(.inkSoft)
+                        .lineLimit(1)
+                    Image(systemName: "chevron.forward")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.inkFaint)
+                }
+                .contentShape(.rect)
+            }
+            .disabled(model.backups.isWorking)
+            .accessibilityLabel("Backup folder")
+            .accessibilityValue(model.backups.folderName)
+            .accessibilityHint("Chooses where backups are saved")
+            .listRowBackground(Color.card)
+
+            actionRow("Back up now", isRunning: activity == .backingUp) {
+                Task { await backUpNow() }
+            }
+            actionRow("Restore from a backup", isRunning: activity == .restoring) {
+                chooseBackup()
+            }
+        } header: {
+            SectionCaption(".backups")
+        } footer: {
+            VStack(alignment: .leading, spacing: 6) {
+                if let problem = model.backups.problem {
+                    Text("The last backup didn't work. \(problem)")
+                        .foregroundStyle(.red)
+                }
+                Text(backupSummary)
+                    .foregroundStyle(.inkSoft)
+            }
+        }
+    }
+
+    private func actionRow(_ title: String, isRunning: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                Spacer(minLength: 8)
+                if isRunning {
+                    ProgressView()
+                }
+            }
+            .contentShape(.rect)
+        }
+        .disabled(model.backups.isWorking)
+        .listRowBackground(Color.card)
+    }
+
+    /// "Last backup: today at 6:31 PM. Kitae on Android can restore these backups too."
+    private var backupSummary: String {
+        let android = "Kitae on Android can restore these backups too."
+        guard let last = model.backups.lastBackup else { return "No backups yet. \(android)" }
+        let format = DateFormatter()
+        format.dateStyle = .medium
+        format.timeStyle = .short
+        format.doesRelativeDateFormatting = true
+        format.formattingContext = .middleOfSentence
+        return "Last backup: \(format.string(from: last)). \(android)"
+    }
+
+    private func backUpNow() async {
+        activity = .backingUp
+        defer { activity = nil }
+        guard !(await model.backUp()), let problem = model.backups.problem else { return }
+        notice = Notice(title: "Couldn't back up", message: problem)
+    }
+
+    private func chooseBackup() {
+        guard model.workout == nil else {
+            notice = Notice(title: "Can't restore a backup now", message: BackupError.workoutInProgress.localizedDescription)
+            return
+        }
+        importing = .backup
+        isImporting = true
+    }
+
+    private func picked(_ result: Result<URL, any Error>) {
+        switch result {
+        case .success(let url):
+            switch importing {
+            case .folder:
+                do {
+                    try model.backups.choose(url)
+                } catch {
+                    notice = Notice(title: "Couldn't use that folder", message: error.localizedDescription)
+                }
+            case .backup:
+                // Asked once Files has gone, as a question asked while it's leaving doesn't show.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(400))
+                    restoreCandidate = url
+                }
+            }
+        case .failure(let error):
+            notice = Notice(title: "Couldn't open that", message: error.localizedDescription)
+        }
+    }
+
+    private func restore(_ url: URL) async {
+        activity = .restoring
+        defer { activity = nil }
+        do {
+            try await model.restoreBackup(from: url)
+            notice = Notice(title: "Backup restored", message: "Kitae now has the plans, workouts and exercises from \(url.lastPathComponent).")
+        } catch {
+            notice = Notice(title: "Couldn't restore the backup", message: error.localizedDescription)
+        }
+    }
+
+    // MARK: Workouts and about
 
     /// Off, and the rest lengths the set and exercise pickers offer.
     private var restChoices: [Int] {
@@ -144,6 +308,31 @@ struct SettingsView: View {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         alertsDenied = settings.authorizationStatus == .denied
     }
+}
+
+/// What Files is picking: a folder for backups, or a backup to restore.
+private enum ImportKind {
+    case folder
+    case backup
+
+    var contentTypes: [UTType] {
+        switch self {
+        case .folder: [.folder]
+        // A backup saved by some Android apps has no .zip at the end of its name.
+        case .backup: [.zip, .data]
+        }
+    }
+}
+
+private enum BackupActivity {
+    case backingUp
+    case restoring
+}
+
+/// An alert after backing up or restoring.
+private struct Notice {
+    let title: String
+    let message: String
 }
 
 /// A setting picked from a menu, with its value and ⌃⌄ on the right, like "Default rest 1:30".
