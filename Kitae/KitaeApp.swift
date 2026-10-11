@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import SwiftUI
+import UIKit
 
 @main
 struct KitaeApp: App {
@@ -9,6 +10,20 @@ struct KitaeApp: App {
 
     init() {
         KitaeFonts.register()
+        Self.styleLargeTitles()
+    }
+
+    /// Large titles, like History's, in Darker Grotesque as in the design.
+    private static func styleLargeTitles() {
+        guard let font = UIFont(name: KitaeFonts.displayBold, size: 48) else { return }
+        var attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: font),
+            .kern: -0.5,
+        ]
+        if let ink = UIColor(named: "Ink") {
+            attributes[.foregroundColor] = ink
+        }
+        UINavigationBar.appearance().largeTitleTextAttributes = attributes
     }
 
     var body: some Scene {

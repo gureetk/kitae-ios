@@ -33,6 +33,8 @@ final class AppModel {
     var isWorkoutPresented = false
     /// Whether the list of plans is showing.
     var isChoosingPlan = false
+    /// Goes up whenever workouts or plans may have changed, so History reads them again.
+    private(set) var historyRevision = 0
     var weightFormatter = WeightFormatter()
     var defaultRestSeconds = 90
     /// Something that went wrong, to tell people about.
@@ -86,6 +88,7 @@ final class AppModel {
                     active: try Sessions.active(db, today: today)
                 )
             }
+            historyRevision += 1
             plans = snapshot.plans
             currentPlan = snapshot.plan
             upNextDayID = Plans.dayAfter(snapshot.lastDone, in: snapshot.plan?.days ?? [])?.id
@@ -174,6 +177,7 @@ final class AppModel {
                 try Sessions.start(db, dayID: day.id, today: EpochDay.of(now), now: now.epochMilliseconds)
             }
             workout = try makeWorkout(id: id)
+            historyRevision += 1
             pickedDayID = nil
             isWorkoutPresented = workout != nil
         } catch {
@@ -210,6 +214,18 @@ final class AppModel {
             return
         }
         close()
+    }
+
+    /// Deletes a past workout and its sets. The plan stays the same. The workout in progress
+    /// is discarded from the workout instead.
+    func deleteWorkout(_ id: Int64) {
+        guard id != workout?.id else { return }
+        do {
+            try database.write { db in try Sessions.discard(db, sessionID: id) }
+        } catch {
+            report(error, "Couldn't delete the workout")
+        }
+        reload()
     }
 
     private func close() {

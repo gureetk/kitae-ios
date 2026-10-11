@@ -13,7 +13,7 @@ enum AppTab: Hashable {
 /// The four tabs, the workout bar above them, and the workout itself.
 struct RootView: View {
     @Bindable var model: AppModel
-    @State private var tab = AppTab.today
+    @State private var tab = Self.firstTab
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -22,7 +22,7 @@ struct RootView: View {
                 TodayView()
             }
             Tab("History", systemImage: "clock.arrow.circlepath", value: .history) {
-                ComingSoonTab(title: "History", systemImage: "clock.arrow.circlepath", message: "Every workout you finish will be listed here.")
+                HistoryView()
             }
             Tab("Exercises", systemImage: "list.bullet", value: .exercises) {
                 ComingSoonTab(title: "Exercises", systemImage: "list.bullet", message: "Kitae's exercises, with how to do them and your progress.")
@@ -68,5 +68,13 @@ struct RootView: View {
             #endif
             model.askForPlanIfNeeded()
         }
+    }
+
+    /// Today, or the tab of a debug screen.
+    private static var firstTab: AppTab {
+        #if DEBUG
+        if DebugLaunch.opensHistory { return .history }
+        #endif
+        return .today
     }
 }

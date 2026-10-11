@@ -10,14 +10,16 @@ import os
 /// `activity` and `activitystates` for the Lock Screen and Dynamic Island rest timer;
 /// `plans` for the first launch and `newplan` for naming a new plan; or `planedit`, `planset`,
 /// `plansettyping`, `addexercise`, `newday` and `firstday` for the plan editor, and `editworkout` and
-/// `workoutedit` for it while a workout is going, from Today and from the workout.
+/// `workoutedit` for it while a workout is going, from Today and from the workout; `history` and
+/// `workoutdetail` for History, with five weeks of example workouts.
 /// These use a database in memory, so the real one isn't touched, and they don't ask for alerts.
 enum DebugLaunch {
     static let screen = UserDefaults.standard.string(forKey: "KitaeScreen")
     private static let log = Logger(subsystem: "ca.gureet.kitae", category: "debug")
     private static let workoutScreens: Set = [
-        "workout", "typing", "finish", "options", "minimized", "switch", "editworkout", "workoutedit",
+        "workout", "typing", "finish", "options", "minimized", "switch", "editworkout", "workoutedit", "history",
     ]
+    private static let historyScreens: Set = ["history", "workoutdetail"]
     private static let editorScreens: Set = [
         "planedit", "planset", "plansettyping", "addexercise", "newday", "editworkout",
     ]
@@ -35,12 +37,18 @@ enum DebugLaunch {
     static var usesExampleData: Bool {
         guard let screen else { return false }
         return screen == "today" || workoutScreens.contains(screen) || editorScreens.contains(screen)
-            || newPlanScreens.contains(screen) || firstLaunchScreens.contains(screen) || galleryPage != nil
+            || newPlanScreens.contains(screen) || firstLaunchScreens.contains(screen)
+            || historyScreens.contains(screen) || galleryPage != nil
     }
 
     /// The rest timer's Lock Screen and Dynamic Island looks, drawn in the app.
     static var galleryPage: String? {
         ["activity", "activitystates"].contains(screen ?? "") ? screen : nil
+    }
+
+    /// Whether Kitae opens on History.
+    static var opensHistory: Bool {
+        historyScreens.contains(screen ?? "")
     }
 
     /// Whether Today opens the plan editor straight away.
@@ -61,6 +69,9 @@ enum DebugLaunch {
         if !firstLaunchScreens.contains(screen), let plan = model.plans.first {
             model.selectPlan(plan.id)
         }
+        if historyScreens.contains(screen) {
+            addExampleHistory(to: model)
+        }
         guard workoutScreens.contains(screen), let day = model.selectedDay else { return }
         model.startWorkout(day, at: Date.now.addingTimeInterval(-(23 * 60 + 36)))
         guard let workout = model.workout else { return }
@@ -71,6 +82,38 @@ enum DebugLaunch {
         }
         workout.startRest(seconds: 95)
         model.isWorkoutPresented = false
+    }
+
+    /// Five weeks of finished workouts of the plan's days in turn, every other day or so, with
+    /// the weights going up a little each time and one workout skipped.
+    private static func addExampleHistory(to model: AppModel) {
+        guard let days = model.currentPlan?.days, !days.isEmpty else { return }
+        let today = EpochDay.of(.now)
+        let daysAgo = [36, 34, 33, 31, 29, 27, 26, 24, 22, 20, 19, 17, 15, 13, 12, 10, 8, 6, 5, 3, 1]
+        do {
+            try model.database.write { db in
+                for (index, ago) in daysAgo.enumerated() {
+                    let day = days[index % days.count]
+                    let date = today - ago
+                    let start = EpochDay.date(date).addingTimeInterval(TimeInterval(17 * 3600 + (index % 4) * 1500))
+                    let sessionID = try Sessions.start(db, dayID: day.id, today: date, now: start.epochMilliseconds)
+                    if ago != 8 {
+                        let sets = try Sessions.exercises(db, sessionID: sessionID, dayID: day.id).flatMap(\.sets)
+                        for var set in sets {
+                            set.weightKg += 1.25
+                            try Sessions.update(db, set: set)
+                            try Sessions.setDone(db, setID: set.id, isDone: true)
+                        }
+                    }
+                    let minutes = 41 + (index * 7) % 24
+                    let end = start.addingTimeInterval(TimeInterval(minutes * 60))
+                    try Sessions.finish(db, sessionID: sessionID, mode: .keepSkipped, addNewSets: false, now: end.epochMilliseconds)
+                }
+            }
+        } catch {
+            note("Couldn't add the example history: \(error)")
+        }
+        model.reload()
     }
 
     /// Whether the example workout should open, rather than stay minimized.
