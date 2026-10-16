@@ -64,3 +64,14 @@ nonisolated struct RestTimer: Codable, Equatable, Sendable {
         total = 0
     }
 }
+
+nonisolated extension RestTimer {
+    /// The countdown at its widest, as it starts: "0:00", "00:00" from ten minutes, or
+    /// "0:00:00" from an hour. The time left keeps this much room, so it's never cut short.
+    var widestClock: String {
+        let seconds = Int(total.rounded(.up))
+        if seconds >= 3600 { return "0:00:00" }
+        if seconds >= 600 { return "00:00" }
+        return "0:00"
+    }
+}

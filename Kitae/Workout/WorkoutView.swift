@@ -123,7 +123,7 @@ struct WorkoutView: View {
     // MARK: Bottom bar
 
     private var bottomBar: some View {
-        HStack(spacing: 8) {
+        WorkoutBottomLayout {
             if workout.rest.isActive {
                 RestTimerBar(workout: workout)
                     .transition(.move(edge: .leading).combined(with: .opacity))
@@ -131,16 +131,20 @@ struct WorkoutView: View {
             Button {
                 startFinishing()
             } label: {
-                HStack(spacing: 8) {
-                    Text("Finish")
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 15, weight: .bold))
+                // Just the checkmark when the rest timer leaves too little room for the word.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 8) {
+                        Text("Finish")
+                        finishCheckmark
+                    }
+                    .padding(.horizontal, 8)
+                    finishCheckmark
                 }
                 .font(.kitaeMono(16, relativeTo: .headline, bold: true))
                 .frame(maxWidth: .infinity, minHeight: 58)
             }
             .buttonStyle(MauveButtonStyle())
-            .frame(width: workout.rest.isActive ? 100 : nil)
+            .accessibilityLabel("Finish")
             .finishQuestions($finishQuestion, workout: workout) { mode, addNewSets in
                 model.finishWorkout(mode, addNewSets: addNewSets)
             }
@@ -148,6 +152,11 @@ struct WorkoutView: View {
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
         .animation(.snappy, value: workout.rest.isActive)
+    }
+
+    private var finishCheckmark: some View {
+        Image(systemName: "checkmark")
+            .font(.system(size: 15, weight: .bold))
     }
 
     // MARK: Toolbars

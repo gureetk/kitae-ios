@@ -20,6 +20,7 @@ struct WorkoutAccessory: View {
                         Text(workout.dayName)
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.ink)
+                            .lineLimit(1)
                         if placement != .inline {
                             HStack(spacing: 0) {
                                 Text(timerInterval: workout.startedAt...Date.distantFuture, countsDown: false)
@@ -27,19 +28,23 @@ struct WorkoutAccessory: View {
                             }
                             .font(.kitaeMono(12, relativeTo: .caption))
                             .foregroundStyle(.inkSoft)
+                            .lineLimit(1)
                         }
                     }
                     Spacer(minLength: 8)
-                    if let endsAt = workout.rest.endsAt {
+                    if workout.rest.isRunning {
+                        // The rest's time is never squeezed: the day's name gives way instead.
                         HStack(spacing: 6) {
                             Image(systemName: "timer")
-                            Text(timerInterval: min(Date.now, endsAt)...endsAt, countsDown: true)
+                            RestCountdown(rest: workout.rest)
                         }
                         .font(.kitaeMono(14, relativeTo: .subheadline, bold: true))
                         .padding(.horizontal, 12)
                         .frame(height: 34)
                         .background(.mauveSoft, in: .capsule)
                         .foregroundStyle(.onMauveSoft)
+                        .fixedSize()
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                     }
                 }
                 .padding(.horizontal, 16)
