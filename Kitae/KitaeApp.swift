@@ -11,16 +11,6 @@ struct KitaeApp: App {
     init() {
         KitaeFonts.register()
         Self.styleLargeTitles()
-        Self.styleSegments()
-    }
-
-    /// Settings' kg / lb and decimals switches in Space Mono, as in the design.
-    private static func styleSegments() {
-        guard let regular = UIFont(name: KitaeFonts.monoRegular, size: 14),
-              let bold = UIFont(name: KitaeFonts.monoBold, size: 14) else { return }
-        let segments = UISegmentedControl.appearance()
-        segments.setTitleTextAttributes([.font: UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: regular)], for: .normal)
-        segments.setTitleTextAttributes([.font: UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: bold)], for: .selected)
     }
 
     /// Large titles, like History's, in Darker Grotesque as in the design.

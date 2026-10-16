@@ -6,8 +6,8 @@ import UIKit
 import UniformTypeIdentifiers
 import UserNotifications
 
-/// Units, decimals, rest, alerts and theme, backups, starting over, and about Kitae. Changes
-/// are saved straight away.
+/// Units, decimals, rest and alerts, text size and theme, backups, starting over, and about
+/// Kitae. Changes are saved straight away.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
@@ -28,31 +28,7 @@ struct SettingsView: View {
         @Bindable var model = model
         List {
             Section {
-                LabeledContent("Units") {
-                    Picker("Units", selection: $model.settings.unit) {
-                        ForEach(WeightUnit.allCases) { unit in
-                            Text(unit.symbol).tag(unit)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
-                }
-                .listRowBackground(Color.card)
-
-                LabeledContent("Decimals") {
-                    Picker("Decimals", selection: $model.settings.decimals) {
-                        ForEach(DecimalStyle.allCases) { style in
-                            Text(style.title)
-                                .accessibilityLabel(style.spokenName)
-                                .tag(style)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
-                }
-                .listRowBackground(Color.card)
+                WeightRows(settings: $model.settings)
 
                 MenuRow(
                     title: "Default rest",
@@ -83,8 +59,7 @@ struct SettingsView: View {
             }
 
             Section {
-                MenuRow(title: "Theme", selection: $model.settings.theme, choices: AppTheme.allCases, name: \.name)
-                    .listRowBackground(Color.card)
+                AppearanceRows(settings: $model.settings)
             } header: {
                 SectionCaption(".appearance")
             }

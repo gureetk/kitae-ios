@@ -8,7 +8,7 @@ import os
 /// Opens a screen straight away in debug builds, for screenshots: launch with
 /// `-KitaeScreen today`, `workout`, `typing`, `finish`, `options`, `minimized` or `switch`;
 /// `activity` and `activitystates` for the Lock Screen and Dynamic Island rest timer;
-/// `plans` for the first launch and `newplan` for naming a new plan; or `planedit`, `planset`,
+/// `welcome` and `plans` for the first launch and `newplan` for naming a new plan; or `planedit`, `planset`,
 /// `plansettyping`, `addexercise`, `newday` and `firstday` for the plan editor, and `editworkout` and
 /// `workoutedit` for it while a workout is going, from Today and from the workout; `history` and
 /// `workoutdetail` for History, `exercises` and `exercise` for Exercises, and `you` and `settings`
@@ -30,7 +30,7 @@ enum DebugLaunch {
     /// Screens that make a new plan to show it.
     private static let newPlanScreens: Set = ["firstday"]
     /// Screens of the first launch, before a plan is chosen.
-    private static let firstLaunchScreens: Set = ["plans", "newplan"]
+    private static let firstLaunchScreens: Set = ["welcome", "plans", "newplan"]
     private static var opened: Set<String> = []
 
     static func note(_ message: String) {
@@ -83,11 +83,14 @@ enum DebugLaunch {
         opened.insert(screen).inserted
     }
 
-    /// Follows the starter plan, unless the screen is of the first launch. For the workout
-    /// screens, starts an example workout 23 minutes in, with two exercises done and the rest
-    /// timer running.
+    /// Skips the welcome unless it's the screen, and follows the starter plan unless the screen
+    /// is of the first launch. For the workout screens, starts an example workout 23 minutes
+    /// in, with two exercises done and the rest timer running.
     static func prepare(_ model: AppModel) {
         guard let screen else { return }
+        if screen != "welcome" {
+            model.finishWelcome()
+        }
         if !firstLaunchScreens.contains(screen), let plan = model.plans.first {
             model.selectPlan(plan.id)
         }

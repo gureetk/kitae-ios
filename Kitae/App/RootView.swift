@@ -46,6 +46,10 @@ struct RootView: View {
             PlansView()
                 .environment(model)
         }
+        .fullScreenCover(isPresented: $model.isWelcoming, onDismiss: { model.askForPlanIfNeeded() }) {
+            WelcomeView()
+                .environment(model)
+        }
         .environment(model)
         .tint(.olive)
         .alert(
@@ -62,6 +66,9 @@ struct RootView: View {
         .onChange(of: model.settings.theme, initial: true) { _, theme in
             Self.apply(theme)
         }
+        .onChange(of: model.settings.textSize, initial: true) { _, textSize in
+            Self.apply(textSize)
+        }
         .task {
             // A sheet or cover asked for before the first frame doesn't open, so wait a moment.
             try? await Task.sleep(for: .milliseconds(400))
@@ -70,7 +77,7 @@ struct RootView: View {
                 model.isWorkoutPresented = true
             }
             #endif
-            model.askForPlanIfNeeded()
+            model.welcomeIfNeeded()
         }
     }
 
@@ -93,10 +100,24 @@ struct RootView: View {
         case .light: .light
         case .dark: .dark
         }
-        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
-            for window in scene.windows {
-                window.overrideUserInterfaceStyle = style
+        for window in windows {
+            window.overrideUserInterfaceStyle = style
+        }
+    }
+
+    /// Text as big as Settings say, or as the phone's. Set on the windows too, so sheets,
+    /// alerts and menus follow it as well.
+    private static func apply(_ textSize: TextSize) {
+        for window in windows {
+            if let category = textSize.contentSizeCategory {
+                window.traitOverrides.preferredContentSizeCategory = category
+            } else if window.traitOverrides.contains(UITraitPreferredContentSizeCategory.self) {
+                window.traitOverrides.remove(UITraitPreferredContentSizeCategory.self)
             }
         }
+    }
+
+    private static var windows: [UIWindow] {
+        UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap(\.windows)
     }
 }

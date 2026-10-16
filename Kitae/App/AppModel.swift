@@ -34,6 +34,8 @@ final class AppModel {
     var isWorkoutPresented = false
     /// Whether the list of plans is showing.
     var isChoosingPlan = false
+    /// Whether the welcome is showing.
+    var isWelcoming = false
     /// Goes up whenever workouts or plans may have changed, so History reads them again.
     private(set) var historyRevision = 0
     /// Goes up when Kitae is reset, so every screen starts over.
@@ -154,6 +156,23 @@ final class AppModel {
     /// launch.
     func askForPlanIfNeeded() {
         if currentPlan == nil { isChoosingPlan = true }
+    }
+
+    /// On first launch, and after a reset: the welcome, and once it's gone the list of plans.
+    /// Someone who already follows a plan, from before there was a welcome, goes straight on.
+    func welcomeIfNeeded() {
+        if !settingsStore.isWelcomeDone, currentPlan == nil {
+            isWelcoming = true
+        } else {
+            settingsStore.isWelcomeDone = true
+            askForPlanIfNeeded()
+        }
+    }
+
+    /// Closes the welcome for good. The list of plans opens once it's gone.
+    func finishWelcome() {
+        settingsStore.isWelcomeDone = true
+        isWelcoming = false
     }
 
     // MARK: Editing plans
@@ -311,14 +330,16 @@ final class AppModel {
     // MARK: Starting over
 
     /// Erases every plan, workout, exercise and setting, so Kitae is as it was when it was
-    /// installed, like Kitae for Android's "Reset app". A workout in progress goes too. Backups
-    /// stay in their folder.
+    /// installed, like Kitae for Android's "Reset app", welcome and all. A workout in progress
+    /// goes too. Backups stay in their folder.
     func reset() throws {
         workout?.skipRest()
         isWorkoutPresented = false
         isChoosingPlan = false
+        isWelcoming = false
         try database.reset()
         settings = AppSettings()
+        settingsStore.isWelcomeDone = false
         backups.forget()
         pickedDayID = nil
         reload()

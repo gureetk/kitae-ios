@@ -18,6 +18,14 @@ nonisolated enum WeightUnit: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// What VoiceOver says for it.
+    var spokenName: String {
+        switch self {
+        case .kilograms: "Kilograms"
+        case .pounds: "Pounds"
+        }
+    }
+
     func fromKilograms(_ kg: Double) -> Double {
         switch self {
         case .kilograms: kg
