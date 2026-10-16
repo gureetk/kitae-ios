@@ -3,11 +3,13 @@
 
 import SwiftUI
 
-/// What Kitae shows first: how big its text is, light or dark, and how weights are written,
-/// with two example sets to judge them by. They're all in Settings too. Once it's gone, a
-/// plan is chosen.
+/// What Kitae shows first: how big its text is, light or dark, how weights are written, the
+/// usual rest and backups, with two example sets to judge them by. A backup can be restored
+/// from here, for someone coming from another phone or from Kitae for Android. It's all in
+/// Settings too. Once it's gone, a plan is chosen.
 struct WelcomeView: View {
     @Environment(AppModel.self) private var model
+    @State private var backupFlow = BackupFlow()
 
     var body: some View {
         @Bindable var model = model
@@ -34,10 +36,20 @@ struct WelcomeView: View {
 
             Section {
                 WeightRows(settings: $model.settings)
+                DefaultRestRow(seconds: $model.settings.defaultRestSeconds)
             } header: {
-                SectionCaption(".weights")
+                SectionCaption(".workouts")
             } footer: {
                 Text("You can type a point or a comma either way. This sets how weights are shown.")
+                    .foregroundStyle(.inkSoft)
+            }
+
+            Section {
+                BackupRows(flow: backupFlow, offersBackUpNow: false)
+            } header: {
+                SectionCaption(".backups")
+            } footer: {
+                Text("Coming from another iPhone, or from Kitae on Android? Restore a backup to bring your plans and workouts with you.")
                     .foregroundStyle(.inkSoft)
             }
         }
@@ -45,6 +57,7 @@ struct WelcomeView: View {
         .environment(\.defaultMinListRowHeight, 52)
         .scrollContentBackground(.hidden)
         .background(Color.paper)
+        .backupFlow(backupFlow)
         .safeAreaBar(edge: .bottom) {
             Button {
                 model.finishWelcome()
@@ -53,6 +66,8 @@ struct WelcomeView: View {
                     .frame(maxWidth: .infinity, minHeight: 58)
             }
             .buttonStyle(MauveButtonStyle())
+            // Not while a backup is being restored, so its answer isn't lost.
+            .disabled(model.backups.isWorking)
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
         }
@@ -74,7 +89,7 @@ struct WelcomeView: View {
                 .padding(.leading, -4)
                 .accessibilityLabel("Welcome to Kitae")
                 .accessibilityAddTraits(.isHeader)
-            Text("Make Kitae easy to read, and pick how it writes weights. You can change all of this later in You › Settings.")
+            Text("Set Kitae up the way you like it. You can change all of this later in You › Settings.")
                 .foregroundStyle(.inkSoft)
                 .padding(.top, 16)
         }

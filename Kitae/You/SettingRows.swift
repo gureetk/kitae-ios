@@ -30,6 +30,37 @@ struct WeightRows: View {
     }
 }
 
+/// The rest after a set without one of its own, as a row of a list: in Settings and in the
+/// welcome.
+struct DefaultRestRow: View {
+    @Binding var seconds: Int
+
+    var body: some View {
+        MenuRow(
+            title: "Default rest",
+            selection: $seconds,
+            choices: Self.choices(for: seconds),
+            name: { $0 > 0 ? restLabel(seconds: $0) : "Off" },
+            spokenName: Self.spokenRest,
+            font: .kitaeMono(15, relativeTo: .body)
+        )
+        .listRowBackground(Color.card)
+    }
+
+    /// Off, and the rest lengths the set and exercise pickers offer, with `seconds` among
+    /// them when it's another, from a backup.
+    static func choices(for seconds: Int) -> [Int] {
+        let choices = [0] + RestSection.choices
+        return choices.contains(seconds) ? choices : (choices + [seconds]).sorted()
+    }
+
+    /// "1 minute, 30 seconds".
+    private nonisolated static func spokenRest(_ seconds: Int) -> String {
+        guard seconds > 0 else { return "Off" }
+        return Duration.seconds(seconds).formatted(.units(allowed: [.minutes, .seconds], width: .wide))
+    }
+}
+
 /// How big the text is, and light or dark, as rows of a list: in Settings and in the welcome.
 struct AppearanceRows: View {
     @Binding var settings: AppSettings
@@ -151,6 +182,40 @@ extension TextSize {
             self = .largest
         } else {
             self = Self.sizes.first { $0.contentSizeCategory == category } ?? .standard
+        }
+    }
+}
+
+/// A setting picked from a menu, with its value and ⌃⌄ on the right, like "Default rest 1:30".
+struct MenuRow<Value: Hashable>: View {
+    let title: String
+    @Binding var selection: Value
+    let choices: [Value]
+    let name: (Value) -> String
+    var spokenName: ((Value) -> String)?
+    var font: Font = .body
+
+    var body: some View {
+        LabeledContent(title) {
+            Menu {
+                Picker(title, selection: $selection) {
+                    ForEach(choices, id: \.self) { choice in
+                        Text(name(choice)).tag(choice)
+                    }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(name(selection))
+                        .font(font)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.footnote.weight(.semibold))
+                }
+                .foregroundStyle(.inkSoft)
+                .frame(minHeight: 44)
+                .contentShape(.rect)
+            }
+            .accessibilityLabel(title)
+            .accessibilityValue((spokenName ?? name)(selection))
         }
     }
 }
