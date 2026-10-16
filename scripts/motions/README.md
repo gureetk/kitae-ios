@@ -9,12 +9,15 @@ one needs the same change in the other.
 
     npm install          # only needed for the pictures
     node make.js
+    node check.js ../../Kitae/Exercises/Motion/ExerciseMotions.json
     node sheet.js ../../Kitae/Exercises/Motion/ExerciseMotions.json sheet.png light 21,22
     node zoom.js ../../Kitae/Exercises/Motion/ExerciseMotions.json zoom.png 21:0 21:0.55 21:still
 
-`sheet.js` draws a row per exercise (all of them, or the ids given): four moments of the loop and
-the Reduce Motion picture, in `light` or `dark`. `zoom.js` draws chosen moments, `id:t` with `t`
-from 0 to 1 or `still`, at twice the size.
+`check.js` runs every loop and reports limbs that stretch, hands that can't reach what they hold
+and anything below the floor (a bar trailing straight arms mid-lift is fine). `sheet.js` draws a
+row per exercise (all of them, or the ids given, in that order): the start, the middle of the move,
+the end and the Reduce Motion picture, in `light` or `dark`. `zoom.js` draws chosen moments,
+`id:t` with `t` from 0 to 1 or `still`, at twice the size.
 
 ## Poses
 
@@ -25,7 +28,12 @@ leg reaches for or `thigh` and `shin` angles (0 up, 90 forward, 180 down). Arms 
 scene or on the body (`on: "torso"`: along the spine, then out the front). `scale` and
 `upperLength` shorten arms that point toward the viewer. `curl` bends the spine above the waist
 and `shrug` lifts the shoulders. The far arm and leg copy the near ones a little behind them,
-unless `farArm`, `farAnkle` or `farThigh` and `farShin` say otherwise.
+unless `farArm`, `farAnkle` or `farThigh` and `farShin` say otherwise. A kneeling pose can pin its
+knee (`kneeAt`) so the hip follows the thigh's angle.
 
-Exercises that move out to the sides, such as lateral raises, need a front-facing figure, which
-doesn't exist yet.
+Movements out to the sides use the front view (`view: "front"`): the figure faces the viewer, and
+angles work as in the side view for the arm and leg on the right of the picture, which the other
+side mirrors unless `otherArm` says otherwise. `turn` turns the whole figure (a side plank),
+`lean` bends it sideways at the waist, `torsoLength`, `thighLength`, `shinLength`, `upperLength`
+and `foreLength` shorten parts that point toward the viewer, `headHeight` lowers the head for a
+bent-over body, and `legsFront` draws sitting legs over the body.

@@ -38,6 +38,7 @@ struct ExerciseMotionView: View {
 extension FigurePalette {
     static var kitae: FigurePalette {
         FigurePalette(body: .figureBody, far: .figureFar, muscle: .olive, muscleFar: .figureMuscleFar,
-                      gear: .figureGear, gearFace: .figureGearFace, prop: .figureProp, shadow: .figureShadow)
+                      gear: .figureGear, gearFace: .figureGearFace, prop: .figureProp, shadow: .figureShadow,
+                      card: .card)
     }
 }

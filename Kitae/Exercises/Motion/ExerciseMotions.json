@@ -1201,7 +1201,7 @@
   "from": {
    "hip": [
     11.5,
-    -111.8
+    -117.3
    ],
    "lean": -6,
    "head": -4,
@@ -1426,6 +1426,3564 @@
      -86.5
     ],
     "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 2,
+  "name": "Barbell Curls",
+  "gear": [
+   {
+    "kind": "barbell",
+    "radius": 15
+   }
+  ],
+  "muscles": [
+   "biceps"
+  ],
+  "timing": [
+   0.1,
+   0.42,
+   0.52,
+   0.95
+  ],
+  "shift": -8,
+  "from": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": 3,
+    "bend": 6
+   }
+  },
+  "to": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": 14,
+    "bend": 125
+   }
+  }
+ },
+ {
+  "id": 52,
+  "name": "Hammer Curls",
+  "gear": [
+   {
+    "kind": "dumbbells",
+    "profile": true
+   }
+  ],
+  "muscles": [
+   "biceps",
+   "forearms"
+  ],
+  "timing": [
+   0.1,
+   0.42,
+   0.52,
+   0.95
+  ],
+  "shift": -6,
+  "from": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": 3,
+    "bend": 6
+   }
+  },
+  "to": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": 12,
+    "bend": 132
+   }
+  }
+ },
+ {
+  "id": 53,
+  "name": "Cable Curls",
+  "muscles": [
+   "biceps"
+  ],
+  "timing": [
+   0.1,
+   0.42,
+   0.52,
+   0.95
+  ],
+  "shift": -18,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     50,
+     -2
+    ],
+    "to": [
+     50,
+     -196
+    ],
+    "width": 7
+   },
+   {
+    "kind": "cable",
+    "from": [
+     50,
+     -18
+    ],
+    "handle": "bar"
+   }
+  ],
+  "from": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": -1,
+   "head": 0,
+   "arm": {
+    "upper": 4,
+    "bend": 8
+   }
+  },
+  "to": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": -1,
+   "head": 0,
+   "arm": {
+    "upper": 12,
+    "bend": 128
+   }
+  }
+ },
+ {
+  "id": 32,
+  "name": "Behind-the-Back Bicep Curls",
+  "muscles": [
+   "biceps"
+  ],
+  "timing": [
+   0.1,
+   0.42,
+   0.52,
+   0.95
+  ],
+  "shift": 16,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     -62,
+     -2
+    ],
+    "to": [
+     -62,
+     -196
+    ],
+    "width": 7
+   },
+   {
+    "kind": "cable",
+    "from": [
+     -62,
+     -20
+    ],
+    "handle": "single"
+   }
+  ],
+  "from": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": -16,
+    "bend": 4
+   },
+   "farArm": {
+    "upper": 2,
+    "bend": 6
+   }
+  },
+  "to": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": -16,
+    "bend": 118
+   },
+   "farArm": {
+    "upper": 2,
+    "bend": 6
+   }
+  }
+ },
+ {
+  "id": 50,
+  "name": "Front Raises",
+  "gear": [
+   {
+    "kind": "dumbbells"
+   }
+  ],
+  "muscles": [
+   "frontDelts"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": -16,
+  "from": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": 8,
+    "bend": 6
+   }
+  },
+  "to": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": 88,
+    "bend": 8
+   }
+  }
+ },
+ {
+  "id": 48,
+  "name": "Overhead Press",
+  "gear": [
+   {
+    "kind": "barbell",
+    "radius": 15
+   }
+  ],
+  "muscles": [
+   "frontDelts",
+   "triceps"
+  ],
+  "timing": [
+   0.1,
+   0.48,
+   0.56,
+   0.95
+  ],
+  "zoom": 0.84,
+  "shift": -8,
+  "from": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": -6,
+   "arm": {
+    "upper": 50,
+    "bend": 120
+   }
+  },
+  "to": {
+   "hip": [
+    -1,
+    -99.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "arm": {
+    "upper": 176,
+    "bend": 2
+   }
+  }
+ },
+ {
+  "id": 57,
+  "name": "Tricep Kickbacks",
+  "gear": [
+   {
+    "kind": "dumbbells",
+    "profile": true
+   }
+  ],
+  "muscles": [
+   "triceps"
+  ],
+  "timing": [
+   0.1,
+   0.42,
+   0.52,
+   0.95
+  ],
+  "shift": 10,
+  "from": {
+   "hip": [
+    -24,
+    -93
+   ],
+   "lean": 64,
+   "head": 40,
+   "arm": {
+    "upper": -70,
+    "bend": 70
+   }
+  },
+  "to": {
+   "hip": [
+    -24,
+    -93
+   ],
+   "lean": 64,
+   "head": 40,
+   "arm": {
+    "upper": -70,
+    "bend": 2
+   }
+  }
+ },
+ {
+  "id": 43,
+  "name": "Straight-Arm Pulldowns",
+  "muscles": [
+   "lats"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": -28,
+  "gear": [
+   {
+    "kind": "cable",
+    "from": [
+     96,
+     -206
+    ],
+    "handle": "bar",
+    "stack": true
+   }
+  ],
+  "from": {
+   "hip": [
+    -6,
+    -98.6
+   ],
+   "lean": 14,
+   "head": 6,
+   "arm": {
+    "upper": 118,
+    "bend": 6
+   }
+  },
+  "to": {
+   "hip": [
+    -6,
+    -98.6
+   ],
+   "lean": 14,
+   "head": 6,
+   "arm": {
+    "upper": 14,
+    "bend": 6
+   }
+  }
+ },
+ {
+  "id": 66,
+  "name": "Cable Kickbacks",
+  "muscles": [
+   "glutes",
+   "hamstrings"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": 4,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     50,
+     -2
+    ],
+    "to": [
+     50,
+     -196
+    ],
+    "width": 7
+   },
+   {
+    "kind": "cable",
+    "from": [
+     50,
+     -14
+    ],
+    "on": "ankle",
+    "handle": "single"
+   }
+  ],
+  "from": {
+   "hip": [
+    0,
+    -100.6
+   ],
+   "lean": 14,
+   "head": 6,
+   "thigh": 182,
+   "shin": 184,
+   "foot": 4,
+   "farThigh": 180,
+   "farShin": 180,
+   "arm": {
+    "hand": [
+     42,
+     -128
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -100.6
+   ],
+   "lean": 18,
+   "head": 8,
+   "thigh": 222,
+   "shin": 236,
+   "foot": 30,
+   "farThigh": 180,
+   "farShin": 180,
+   "arm": {
+    "hand": [
+     42,
+     -128
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 47,
+  "name": "Deadlift",
+  "gear": [
+   {
+    "kind": "barbell"
+   }
+  ],
+  "muscles": [
+   "glutes",
+   "hamstrings",
+   "lowerBack"
+  ],
+  "timing": [
+   0.1,
+   0.48,
+   0.58,
+   0.95
+  ],
+  "shift": 6,
+  "from": {
+   "hip": [
+    -36,
+    -59
+   ],
+   "lean": 56,
+   "head": 30,
+   "arm": {
+    "hand": [
+     8,
+     -23.5
+    ],
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -1,
+    -98.8
+   ],
+   "lean": 2,
+   "head": 0,
+   "arm": {
+    "hand": [
+     9,
+     -91.5
+    ],
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 62,
+  "name": "Romanian Deadlift",
+  "gear": [
+   {
+    "kind": "barbell"
+   }
+  ],
+  "muscles": [
+   "hamstrings",
+   "glutes"
+  ],
+  "timing": [
+   0.08,
+   0.5,
+   0.58,
+   0.94
+  ],
+  "shift": 10,
+  "from": {
+   "hip": [
+    -1,
+    -98
+   ],
+   "lean": 3,
+   "head": 1,
+   "arm": {
+    "hand": [
+     9,
+     -85.5
+    ],
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -30,
+    -86
+   ],
+   "lean": 72,
+   "head": 46,
+   "arm": {
+    "hand": [
+     13,
+     -40
+    ],
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 64,
+  "name": "Good Mornings",
+  "gear": [
+   {
+    "kind": "barbell",
+    "on": "back"
+   }
+  ],
+  "muscles": [
+   "hamstrings",
+   "glutes",
+   "lowerBack"
+  ],
+  "timing": [
+   0.08,
+   0.5,
+   0.58,
+   0.94
+  ],
+  "shift": 12,
+  "from": {
+   "hip": [
+    -2,
+    -99.2
+   ],
+   "lean": 3,
+   "head": 1,
+   "arm": {
+    "hand": [
+     48.6,
+     -13
+    ],
+    "on": "torso",
+    "scale": 0.75,
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -24,
+    -95
+   ],
+   "lean": 76,
+   "head": 50,
+   "arm": {
+    "hand": [
+     48.6,
+     -13
+    ],
+    "on": "torso",
+    "scale": 0.75,
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 46,
+  "name": "T-Bar Rows",
+  "gear": [
+   {
+    "kind": "tbar",
+    "anchor": [
+     -96,
+     -4
+    ]
+   }
+  ],
+  "muscles": [
+   "lats",
+   "traps",
+   "rearDelts"
+  ],
+  "timing": [
+   0.08,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": 16,
+  "from": {
+   "hip": [
+    -30,
+    -86
+   ],
+   "lean": 64,
+   "head": 36,
+   "arm": {
+    "hand": [
+     15,
+     -46
+    ],
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -30,
+    -86
+   ],
+   "lean": 64,
+   "head": 36,
+   "arm": {
+    "hand": [
+     8,
+     -70
+    ],
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 13,
+  "name": "Hack Squats",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "timing": [
+   0.08,
+   0.52,
+   0.58,
+   0.94
+  ],
+  "shift": 14,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     -22,
+     -33
+    ],
+    "to": [
+     -102,
+     -135
+    ],
+    "width": 6
+   },
+   {
+    "kind": "pad",
+    "on": "back",
+    "top": 72,
+    "bottom": -4
+   },
+   {
+    "kind": "pad",
+    "from": [
+     -8.1,
+     -4
+    ],
+    "to": [
+     24.1,
+     -13.7
+    ],
+    "thick": 6,
+    "legs": [
+     8
+    ]
+   }
+  ],
+  "from": {
+   "hip": [
+    -40,
+    -95
+   ],
+   "lean": -38,
+   "head": -20,
+   "ankle": [
+    0,
+    -14
+   ],
+   "foot": -18,
+   "arm": {
+    "hand": [
+     47,
+     7
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -12,
+    -60
+   ],
+   "lean": -38,
+   "head": -20,
+   "ankle": [
+    0,
+    -14
+   ],
+   "foot": -18,
+   "arm": {
+    "hand": [
+     47,
+     7
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 33,
+  "name": "Smith-Squats",
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     -31,
+     -2
+    ],
+    "to": [
+     -31,
+     -204
+    ],
+    "width": 6
+   },
+   {
+    "kind": "barbell",
+    "on": "back"
+   }
+  ],
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "timing": [
+   0.08,
+   0.52,
+   0.58,
+   0.94
+  ],
+  "shift": 10,
+  "from": {
+   "hip": [
+    -16,
+    -98.8
+   ],
+   "lean": 4,
+   "head": 2,
+   "arm": {
+    "hand": [
+     48.6,
+     -13
+    ],
+    "on": "torso",
+    "scale": 0.75,
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -42,
+    -58
+   ],
+   "lean": 32,
+   "head": 16,
+   "arm": {
+    "hand": [
+     46.4,
+     -11.2
+    ],
+    "on": "torso",
+    "scale": 0.75,
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 58,
+  "name": "Front Squats",
+  "gear": [
+   {
+    "kind": "barbell",
+    "on": "front"
+   }
+  ],
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "timing": [
+   0.08,
+   0.52,
+   0.58,
+   0.94
+  ],
+  "shift": 10,
+  "from": {
+   "hip": [
+    -2,
+    -99.6
+   ],
+   "lean": 3,
+   "head": 2,
+   "arm": {
+    "hand": [
+     53,
+     9
+    ],
+    "on": "torso",
+    "scale": 0.85,
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -30,
+    -52
+   ],
+   "lean": 18,
+   "head": 10,
+   "arm": {
+    "hand": [
+     53,
+     9
+    ],
+    "on": "torso",
+    "scale": 0.85,
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 60,
+  "name": "Goblet Squats",
+  "gear": [
+   {
+    "kind": "dumbbells",
+    "on": "chest"
+   }
+  ],
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "timing": [
+   0.08,
+   0.52,
+   0.58,
+   0.94
+  ],
+  "shift": 8,
+  "from": {
+   "hip": [
+    -2,
+    -99.6
+   ],
+   "lean": 3,
+   "head": 2,
+   "arm": {
+    "hand": [
+     38,
+     20
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -32,
+    -50
+   ],
+   "lean": 25,
+   "head": 12,
+   "arm": {
+    "hand": [
+     38,
+     20
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 59,
+  "name": "Bulgarian Split Squats",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "timing": [
+   0.08,
+   0.5,
+   0.58,
+   0.94
+  ],
+  "shift": 18,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -96,
+     -44
+    ],
+    "to": [
+     -38,
+     -44
+    ],
+    "legs": [
+     -84,
+     -50
+    ]
+   },
+   {
+    "kind": "dumbbells",
+    "profile": true
+   }
+  ],
+  "from": {
+   "hip": [
+    -12,
+    -90
+   ],
+   "lean": 6,
+   "head": 2,
+   "ankle": [
+    24,
+    -7.4
+   ],
+   "farAnkle": [
+    -48,
+    -49
+   ],
+   "farFoot": 160,
+   "arm": {
+    "upper": 0,
+    "bend": 4
+   }
+  },
+  "to": {
+   "hip": [
+    -14,
+    -56
+   ],
+   "lean": 10,
+   "head": 4,
+   "ankle": [
+    24,
+    -7.4
+   ],
+   "farAnkle": [
+    -48,
+    -49
+   ],
+   "farFoot": 160,
+   "arm": {
+    "upper": 0,
+    "bend": 4
+   }
+  }
+ },
+ {
+  "id": 61,
+  "name": "Wall Sit",
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     -37,
+     -2
+    ],
+    "to": [
+     -37,
+     -196
+    ],
+    "width": 8
+   }
+  ],
+  "muscles": [
+   "quads"
+  ],
+  "timing": [
+   0.06,
+   0.3,
+   0.9,
+   0.98
+  ],
+  "seconds": 4,
+  "from": {
+   "hip": [
+    -19,
+    -84
+   ],
+   "lean": 0,
+   "head": 0,
+   "ankle": [
+    26,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     36,
+     10
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -19,
+    -55
+   ],
+   "lean": 0,
+   "head": 0,
+   "ankle": [
+    26,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     36,
+     10
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 16,
+  "name": "Calf Raises",
+  "muscles": [
+   "calves"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.92
+  ],
+  "shift": -8,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     5,
+     -10
+    ],
+    "to": [
+     46,
+     -10
+    ],
+    "thick": 10
+   }
+  ],
+  "from": {
+   "hip": [
+    -3.4,
+    -105.6
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "ankle": [
+    -1.9,
+    -13
+   ],
+   "foot": -20,
+   "arm": {
+    "upper": 2,
+    "bend": 6
+   }
+  },
+  "to": {
+   "hip": [
+    3.5,
+    -114.9
+   ],
+   "lean": 1.5,
+   "head": 0,
+   "ankle": [
+    5,
+    -22.3
+   ],
+   "foot": 28,
+   "arm": {
+    "upper": 2,
+    "bend": 6
+   }
+  }
+ },
+ {
+  "id": 17,
+  "name": "Hip Thrusts",
+  "muscles": [
+   "glutes",
+   "hamstrings"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": 18,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -118,
+     -47
+    ],
+    "to": [
+     -44,
+     -47
+    ],
+    "legs": [
+     -104,
+     -60
+    ]
+   },
+   {
+    "kind": "barbell",
+    "on": "hips"
+   }
+  ],
+  "from": {
+   "hip": [
+    -8.1,
+    -34.3
+   ],
+   "lean": -55,
+   "head": -30,
+   "ankle": [
+    36,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     0,
+     13
+    ],
+    "on": "torso",
+    "scale": 0.9,
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    -8,
+    -59.5
+   ],
+   "lean": -90,
+   "head": -60,
+   "ankle": [
+    36,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     0,
+     13
+    ],
+    "on": "torso",
+    "scale": 0.9,
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 36,
+  "name": "Dumbbell Bench Press",
+  "muscles": [
+   "chest",
+   "triceps",
+   "frontDelts"
+  ],
+  "timing": [
+   0.1,
+   0.5,
+   0.58,
+   0.95
+  ],
+  "shift": 14,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -92,
+     -47
+    ],
+    "to": [
+     24,
+     -47
+    ],
+    "legs": [
+     -76,
+     8
+    ]
+   },
+   {
+    "kind": "dumbbells"
+   }
+  ],
+  "from": {
+   "hip": [
+    0,
+    -59.5
+   ],
+   "lean": -90,
+   "ankle": [
+    44,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     -45,
+     -120
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -59.5
+   ],
+   "lean": -90,
+   "ankle": [
+    44,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     -40,
+     -68
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 56,
+  "name": "Close-Grip Bench Press",
+  "muscles": [
+   "triceps",
+   "chest"
+  ],
+  "timing": [
+   0.1,
+   0.5,
+   0.58,
+   0.95
+  ],
+  "shift": 14,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -92,
+     -47
+    ],
+    "to": [
+     24,
+     -47
+    ],
+    "legs": [
+     -76,
+     8
+    ]
+   },
+   {
+    "kind": "barbell"
+   }
+  ],
+  "from": {
+   "hip": [
+    0,
+    -59.5
+   ],
+   "lean": -90,
+   "ankle": [
+    44,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     -45,
+     -120
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -59.5
+   ],
+   "lean": -90,
+   "ankle": [
+    44,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     -33,
+     -68.5
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 37,
+  "name": "Incline Dumbbell Press",
+  "muscles": [
+   "chest",
+   "frontDelts",
+   "triceps"
+  ],
+  "timing": [
+   0.1,
+   0.5,
+   0.58,
+   0.95
+  ],
+  "shift": 4,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -16,
+     -48
+    ],
+    "to": [
+     22,
+     -48
+    ],
+    "legs": [
+     8
+    ]
+   },
+   {
+    "kind": "pad",
+    "from": [
+     -67.8,
+     -90.2
+    ],
+    "to": [
+     -9.4,
+     -48.1
+    ]
+   },
+   {
+    "kind": "post",
+    "from": [
+     -42.1,
+     -60.6
+    ],
+    "to": [
+     -42.1,
+     -2
+    ],
+    "width": 4
+   },
+   {
+    "kind": "dumbbells"
+   }
+  ],
+  "from": {
+   "hip": [
+    0,
+    -58
+   ],
+   "lean": -55,
+   "head": -45,
+   "ankle": [
+    50,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     -37.6,
+     -146.1
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -58
+   ],
+   "lean": -55,
+   "head": -45,
+   "ankle": [
+    50,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     -27.2,
+     -93.2
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 38,
+  "name": "Decline Bench Press",
+  "muscles": [
+   "chest",
+   "triceps"
+  ],
+  "timing": [
+   0.1,
+   0.5,
+   0.58,
+   0.95
+  ],
+  "shift": 6,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -84.3,
+     -34.3
+    ],
+    "to": [
+     28.1,
+     -53.1
+    ],
+    "legs": [
+     -60,
+     4
+    ]
+   },
+   {
+    "kind": "roller",
+    "at": [
+     52,
+     -20
+    ]
+   },
+   {
+    "kind": "barbell"
+   }
+  ],
+  "from": {
+   "hip": [
+    12,
+    -64
+   ],
+   "lean": -100,
+   "head": -96,
+   "ankle": [
+    46,
+    -26
+   ],
+   "arm": {
+    "hand": [
+     -33.2,
+     -115.2
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    12,
+    -64
+   ],
+   "lean": -100,
+   "head": -96,
+   "ankle": [
+    46,
+    -26
+   ],
+   "arm": {
+    "hand": [
+     -22.5,
+     -68.7
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 15,
+  "name": "Lying Leg Curls",
+  "muscles": [
+   "hamstrings"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": 8,
+  "shadow": [
+   10,
+   0
+  ],
+  "shadowWidth": 70,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -38,
+     -47
+    ],
+    "to": [
+     84,
+     -47
+    ],
+    "legs": [
+     -24,
+     70
+    ]
+   },
+   {
+    "kind": "roller",
+    "on": "calf"
+   }
+  ],
+  "from": {
+   "hip": [
+    0,
+    -60
+   ],
+   "lean": 90,
+   "head": 75,
+   "thigh": 268,
+   "shin": 268,
+   "foot": 88,
+   "arm": {
+    "hand": [
+     74,
+     -50
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -60
+   ],
+   "lean": 90,
+   "head": 75,
+   "thigh": 268,
+   "shin": 390,
+   "foot": 210,
+   "arm": {
+    "hand": [
+     74,
+     -50
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 45,
+  "name": "Single-Arm Dumbbell Rows",
+  "muscles": [
+   "lats",
+   "rearDelts"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": 26,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -92,
+     -47
+    ],
+    "to": [
+     32,
+     -47
+    ],
+    "legs": [
+     -78,
+     18
+    ]
+   },
+   {
+    "kind": "dumbbells",
+    "profile": true,
+    "one": true
+   }
+  ],
+  "from": {
+   "hip": [
+    -30,
+    -98.5
+   ],
+   "lean": 80,
+   "head": 62,
+   "ankle": [
+    -22,
+    -7.4
+   ],
+   "farThigh": 180,
+   "farShin": 270,
+   "farFoot": 90,
+   "farArm": {
+    "hand": [
+     24,
+     -52
+    ],
+    "elbow": 1
+   },
+   "arm": {
+    "hand": [
+     16,
+     -52
+    ],
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -30,
+    -98.5
+   ],
+   "lean": 80,
+   "head": 62,
+   "ankle": [
+    -22,
+    -7.4
+   ],
+   "farThigh": 180,
+   "farShin": 270,
+   "farFoot": 90,
+   "farArm": {
+    "hand": [
+     24,
+     -52
+    ],
+    "elbow": 1
+   },
+   "arm": {
+    "hand": [
+     -12,
+     -90
+    ],
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 12,
+  "name": "Leg Press",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "timing": [
+   0.1,
+   0.5,
+   0.58,
+   0.95
+  ],
+  "shift": -4,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     -10,
+     -20
+    ],
+    "to": [
+     92,
+     -140
+    ],
+    "width": 6
+   },
+   {
+    "kind": "pad",
+    "on": "back",
+    "top": 66,
+    "bottom": 2
+   },
+   {
+    "kind": "pad",
+    "from": [
+     -44,
+     -27
+    ],
+    "to": [
+     -6,
+     -32
+    ],
+    "legs": [
+     -26
+    ]
+   },
+   {
+    "kind": "footplate",
+    "length": 44,
+    "thick": 7
+   }
+  ],
+  "from": {
+   "hip": [
+    -20,
+    -40
+   ],
+   "lean": -52,
+   "head": -30,
+   "ankle": [
+    12,
+    -67
+   ],
+   "foot": -130,
+   "arm": {
+    "hand": [
+     -6,
+     -42
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    -20,
+    -40
+   ],
+   "lean": -52,
+   "head": -30,
+   "ankle": [
+    47,
+    -96.5
+   ],
+   "foot": -130,
+   "arm": {
+    "hand": [
+     -6,
+     -42
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 31,
+  "name": "Leg Extensions",
+  "muscles": [
+   "quads"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": -10,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -30,
+     -48
+    ],
+    "to": [
+     42,
+     -48
+    ],
+    "legs": [
+     6
+    ]
+   },
+   {
+    "kind": "pad",
+    "from": [
+     -25.6,
+     -121.6
+    ],
+    "to": [
+     -18.2,
+     -62.1
+    ]
+   },
+   {
+    "kind": "roller",
+    "on": "shin"
+   }
+  ],
+  "from": {
+   "hip": [
+    -4,
+    -58
+   ],
+   "lean": -8,
+   "head": -4,
+   "thigh": 90,
+   "shin": 180,
+   "foot": 0,
+   "arm": {
+    "hand": [
+     -14,
+     -52
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    -4,
+    -58
+   ],
+   "lean": -8,
+   "head": -4,
+   "thigh": 90,
+   "shin": 92,
+   "foot": -88,
+   "arm": {
+    "hand": [
+     -14,
+     -52
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 63,
+  "name": "Seated Leg Curls",
+  "muscles": [
+   "hamstrings"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": -30,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -32,
+     -52
+    ],
+    "to": [
+     36,
+     -52
+    ],
+    "legs": [
+     2
+    ]
+   },
+   {
+    "kind": "pad",
+    "from": [
+     -29.9,
+     -124
+    ],
+    "to": [
+     -18.5,
+     -65.1
+    ]
+   },
+   {
+    "kind": "roller",
+    "on": "thigh"
+   },
+   {
+    "kind": "roller",
+    "on": "calf"
+   }
+  ],
+  "from": {
+   "hip": [
+    -4,
+    -62
+   ],
+   "lean": -12,
+   "head": -6,
+   "thigh": 88,
+   "shin": 92,
+   "foot": -88,
+   "arm": {
+    "hand": [
+     -12,
+     -56
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    -4,
+    -62
+   ],
+   "lean": -12,
+   "head": -6,
+   "thigh": 88,
+   "shin": 196,
+   "foot": 16,
+   "arm": {
+    "hand": [
+     -12,
+     -56
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 68,
+  "name": "Seated Calf Raises",
+  "muscles": [
+   "calves"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.92
+  ],
+  "shift": 14,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -72,
+     -58
+    ],
+    "to": [
+     -18,
+     -58
+    ],
+    "legs": [
+     -46
+    ]
+   },
+   {
+    "kind": "pad",
+    "from": [
+     4,
+     -14
+    ],
+    "to": [
+     40,
+     -14
+    ],
+    "thick": 14
+   },
+   {
+    "kind": "roller",
+    "on": "knee"
+   }
+  ],
+  "from": {
+   "hip": [
+    -40,
+    -68
+   ],
+   "lean": 4,
+   "head": 0,
+   "ankle": [
+    -2,
+    -16.6
+   ],
+   "foot": -22,
+   "arm": {
+    "hand": [
+     1.6,
+     -79.2
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    -40,
+    -68
+   ],
+   "lean": 4,
+   "head": 0,
+   "ankle": [
+    5.4,
+    -26.6
+   ],
+   "foot": 30,
+   "arm": {
+    "hand": [
+     -2.1,
+     -88.4
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 41,
+  "name": "Machine Chest Press",
+  "muscles": [
+   "chest",
+   "triceps",
+   "frontDelts"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": -10,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -24,
+     -50
+    ],
+    "to": [
+     12,
+     -50
+    ],
+    "legs": [
+     -6
+    ]
+   },
+   {
+    "kind": "pad",
+    "from": [
+     -21.1,
+     -125
+    ],
+    "to": [
+     -17.7,
+     -63
+    ]
+   },
+   {
+    "kind": "handle"
+   }
+  ],
+  "from": {
+   "hip": [
+    -4,
+    -60
+   ],
+   "lean": -4,
+   "head": 0,
+   "ankle": [
+    38,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     14,
+     -104
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    -4,
+    -60
+   ],
+   "lean": -4,
+   "head": 0,
+   "ankle": [
+    38,
+    -7.4
+   ],
+   "arm": {
+    "hand": [
+     50,
+     -106
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 44,
+  "name": "Seated Cable Rows",
+  "muscles": [
+   "lats",
+   "traps"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": -22,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -74,
+     -28
+    ],
+    "to": [
+     16,
+     -28
+    ],
+    "legs": [
+     -60,
+     2
+    ]
+   },
+   {
+    "kind": "pad",
+    "from": [
+     66,
+     -14
+    ],
+    "to": [
+     66,
+     -62
+    ],
+    "thick": 6
+   },
+   {
+    "kind": "post",
+    "from": [
+     80,
+     -2
+    ],
+    "to": [
+     80,
+     -110
+    ],
+    "width": 7
+   },
+   {
+    "kind": "cable",
+    "from": [
+     80,
+     -44
+    ],
+    "handle": "bar"
+   }
+  ],
+  "from": {
+   "hip": [
+    -22,
+    -38
+   ],
+   "head": 0,
+   "ankle": [
+    58,
+    -32
+   ],
+   "foot": -90,
+   "lean": 10,
+   "arm": {
+    "hand": [
+     46,
+     -72
+    ],
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -22,
+    -38
+   ],
+   "head": 0,
+   "ankle": [
+    58,
+    -32
+   ],
+   "foot": -90,
+   "lean": -6,
+   "arm": {
+    "hand": [
+     -1.8,
+     -56.2
+    ],
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 54,
+  "name": "Concentration Curls",
+  "muscles": [
+   "biceps"
+  ],
+  "timing": [
+   0.1,
+   0.42,
+   0.52,
+   0.95
+  ],
+  "shift": -4,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -40,
+     -48
+    ],
+    "to": [
+     10,
+     -48
+    ],
+    "legs": [
+     -16
+    ]
+   },
+   {
+    "kind": "dumbbells",
+    "one": true
+   }
+  ],
+  "from": {
+   "hip": [
+    -8,
+    -58
+   ],
+   "lean": 32,
+   "head": 50,
+   "ankle": [
+    34,
+    -7.4
+   ],
+   "arm": {
+    "upper": 6,
+    "bend": 4
+   },
+   "farArm": {
+    "hand": [
+     30,
+     -66
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    -8,
+    -58
+   ],
+   "lean": 32,
+   "head": 50,
+   "ankle": [
+    34,
+    -7.4
+   ],
+   "arm": {
+    "upper": 6,
+    "bend": 134
+   },
+   "farArm": {
+    "hand": [
+     30,
+     -66
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 19,
+  "name": "Sit-ups",
+  "muscles": [
+   "abs"
+  ],
+  "timing": [
+   0.1,
+   0.48,
+   0.56,
+   0.95
+  ],
+  "shift": 6,
+  "shadow": [
+   -6,
+   0
+  ],
+  "shadowWidth": 70,
+  "from": {
+   "hip": [
+    0,
+    -12.5
+   ],
+   "ankle": [
+    40,
+    -7.4
+   ],
+   "lean": -90,
+   "head": -88,
+   "arm": {
+    "hand": [
+     38,
+     10
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -12.5
+   ],
+   "ankle": [
+    40,
+    -7.4
+   ],
+   "lean": -24,
+   "curl": 18,
+   "head": -2,
+   "arm": {
+    "hand": [
+     38,
+     10
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 71,
+  "name": "Crunches",
+  "muscles": [
+   "abs"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": 6,
+  "shadow": [
+   -6,
+   0
+  ],
+  "shadowWidth": 70,
+  "from": {
+   "hip": [
+    0,
+    -12.5
+   ],
+   "ankle": [
+    40,
+    -7.4
+   ],
+   "lean": -90,
+   "head": -88,
+   "arm": {
+    "hand": [
+     38,
+     10
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -12.5
+   ],
+   "ankle": [
+    40,
+    -7.4
+   ],
+   "lean": -90,
+   "curl": 34,
+   "head": -40,
+   "arm": {
+    "hand": [
+     38,
+     10
+    ],
+    "on": "torso",
+    "scale": 0.8,
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 65,
+  "name": "Glute Bridges",
+  "muscles": [
+   "glutes",
+   "hamstrings"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": 10,
+  "shadow": [
+   -6,
+   0
+  ],
+  "shadowWidth": 70,
+  "from": {
+   "hip": [
+    0,
+    -12.5
+   ],
+   "lean": -90,
+   "head": -92,
+   "ankle": [
+    36,
+    -7.4
+   ],
+   "arm": {
+    "upper": 90,
+    "bend": 0
+   }
+  },
+  "to": {
+   "hip": [
+    -10.8,
+    -30.8
+   ],
+   "lean": -118,
+   "head": -80,
+   "ankle": [
+    36,
+    -7.4
+   ],
+   "arm": {
+    "upper": 90,
+    "bend": 0
+   }
+  }
+ },
+ {
+  "id": 40,
+  "name": "Push-ups",
+  "muscles": [
+   "chest",
+   "triceps"
+  ],
+  "timing": [
+   0.1,
+   0.5,
+   0.58,
+   0.95
+  ],
+  "shift": -8,
+  "shadow": [
+   10,
+   0
+  ],
+  "shadowWidth": 80,
+  "from": {
+   "hip": [
+    26.6,
+    -49.5
+   ],
+   "lean": 72,
+   "thigh": 252,
+   "shin": 252,
+   "foot": 72,
+   "arm": {
+    "hand": [
+     74,
+     -5
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    31.1,
+    -24
+   ],
+   "lean": 88,
+   "thigh": 268,
+   "shin": 268,
+   "foot": 88,
+   "arm": {
+    "hand": [
+     74,
+     -5
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 69,
+  "name": "Plank",
+  "muscles": [
+   "abs"
+  ],
+  "timing": [
+   0.06,
+   0.28,
+   0.9,
+   0.98
+  ],
+  "seconds": 4,
+  "shift": -2,
+  "shadow": [
+   4,
+   0
+  ],
+  "shadowWidth": 82,
+  "from": {
+   "hip": [
+    25.1,
+    -23.7
+   ],
+   "lean": 68.5,
+   "thigh": 248.4,
+   "shin": 300,
+   "foot": 160,
+   "arm": {
+    "upper": 0,
+    "bend": 90
+   }
+  },
+  "to": {
+   "hip": [
+    22.3,
+    -33.5
+   ],
+   "lean": 82.1,
+   "thigh": 262.1,
+   "shin": 262.1,
+   "foot": 82.1,
+   "arm": {
+    "upper": 0,
+    "bend": 90
+   }
+  }
+ },
+ {
+  "id": 72,
+  "name": "Cable Crunches",
+  "muscles": [
+   "abs"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": -12,
+  "gear": [
+   {
+    "kind": "cable",
+    "from": [
+     60,
+     -204
+    ],
+    "handle": "rope",
+    "stack": true
+   }
+  ],
+  "from": {
+   "hip": [
+    -6,
+    -53.1
+   ],
+   "thigh": 180,
+   "shin": 270,
+   "foot": 166,
+   "lean": 12,
+   "head": 10,
+   "arm": {
+    "hand": [
+     54,
+     10
+    ],
+    "on": "torso",
+    "scale": 0.85,
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    -6,
+    -53.1
+   ],
+   "thigh": 180,
+   "shin": 270,
+   "foot": 166,
+   "lean": 42,
+   "curl": 40,
+   "head": 90,
+   "arm": {
+    "hand": [
+     54,
+     10
+    ],
+    "on": "torso",
+    "scale": 0.85,
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 75,
+  "name": "Ab Wheel Rollouts",
+  "muscles": [
+   "abs"
+  ],
+  "timing": [
+   0.1,
+   0.48,
+   0.56,
+   0.95
+  ],
+  "shift": -40,
+  "shadow": [
+   40,
+   0
+  ],
+  "shadowWidth": 96,
+  "gear": [
+   {
+    "kind": "wheel",
+    "radius": 8
+   }
+  ],
+  "from": {
+   "hip": [
+    -21.9,
+    -50.3
+   ],
+   "kneeAt": [
+    -6,
+    -6.6
+   ],
+   "lean": 60,
+   "head": 70,
+   "thigh": 160,
+   "shin": 270,
+   "foot": 166,
+   "arm": {
+    "hand": [
+     25.5,
+     -14.5
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    36.1,
+    -26.3
+   ],
+   "kneeAt": [
+    -6,
+    -6.6
+   ],
+   "lean": 78,
+   "head": 84,
+   "thigh": 245,
+   "shin": 270,
+   "foot": 166,
+   "arm": {
+    "hand": [
+     130,
+     -10.6
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 42,
+  "name": "Chin-ups",
+  "muscles": [
+   "lats",
+   "biceps"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "zoom": 0.78,
+  "shift": 0,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     -34,
+     -2
+    ],
+    "to": [
+     -34,
+     -236
+    ],
+    "width": 5
+   },
+   {
+    "kind": "post",
+    "from": [
+     -34,
+     -228
+    ],
+    "to": [
+     6,
+     -228
+    ],
+    "width": 3
+   },
+   {
+    "kind": "bar",
+    "at": [
+     6,
+     -228
+    ]
+   }
+  ],
+  "from": {
+   "hip": [
+    11.5,
+    -117.3
+   ],
+   "lean": -6,
+   "head": -4,
+   "thigh": 172,
+   "shin": 205,
+   "farThigh": 166,
+   "farShin": 198,
+   "arm": {
+    "hand": [
+     6,
+     -221.5
+    ],
+    "scale": 0.9,
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    7,
+    -168
+   ],
+   "lean": -12,
+   "head": -18,
+   "thigh": 172,
+   "shin": 205,
+   "farThigh": 166,
+   "farShin": 198,
+   "arm": {
+    "hand": [
+     6,
+     -221.5
+    ],
+    "scale": 0.9,
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 74,
+  "name": "Hanging Leg Raises",
+  "muscles": [
+   "abs"
+  ],
+  "timing": [
+   0.1,
+   0.48,
+   0.56,
+   0.95
+  ],
+  "zoom": 0.78,
+  "shift": -34,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     -34,
+     -2
+    ],
+    "to": [
+     -34,
+     -236
+    ],
+    "width": 5
+   },
+   {
+    "kind": "post",
+    "from": [
+     -34,
+     -228
+    ],
+    "to": [
+     6,
+     -228
+    ],
+    "width": 3
+   },
+   {
+    "kind": "bar",
+    "at": [
+     6,
+     -228
+    ]
+   }
+  ],
+  "from": {
+   "hip": [
+    11.5,
+    -117.3
+   ],
+   "lean": -6,
+   "head": -4,
+   "thigh": 182,
+   "shin": 182,
+   "foot": 2,
+   "arm": {
+    "hand": [
+     6,
+     -221.5
+    ],
+    "scale": 0.9,
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    6,
+    -120.5
+   ],
+   "lean": -16,
+   "head": -8,
+   "thigh": 92,
+   "shin": 94,
+   "foot": -86,
+   "arm": {
+    "hand": [
+     6,
+     -221.5
+    ],
+    "scale": 0.9,
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 55,
+  "name": "Dips",
+  "muscles": [
+   "triceps",
+   "chest"
+  ],
+  "timing": [
+   0.1,
+   0.48,
+   0.56,
+   0.95
+  ],
+  "zoom": 0.86,
+  "shift": 14,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     2,
+     -2
+    ],
+    "to": [
+     2,
+     -112
+    ],
+    "width": 5
+   },
+   {
+    "kind": "bar",
+    "at": [
+     2,
+     -112
+    ]
+   }
+  ],
+  "from": {
+   "hip": [
+    -8.7,
+    -128.5
+   ],
+   "lean": 8,
+   "head": 4,
+   "thigh": 192,
+   "shin": 238,
+   "farThigh": 186,
+   "farShin": 232,
+   "arm": {
+    "hand": [
+     1,
+     -118.5
+    ],
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    -20.8,
+    -100.3
+   ],
+   "lean": 18,
+   "head": 10,
+   "thigh": 192,
+   "shin": 238,
+   "farThigh": 186,
+   "farShin": 232,
+   "arm": {
+    "hand": [
+     1,
+     -118.5
+    ],
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 8,
+  "name": "Lateral Raises",
+  "view": "front",
+  "gear": [
+   {
+    "kind": "dumbbells"
+   }
+  ],
+  "muscles": [
+   "sideDelts"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "from": {
+   "hip": [
+    0,
+    -100.2
+   ],
+   "arm": {
+    "upper": 7,
+    "bend": 6
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -100.2
+   ],
+   "arm": {
+    "upper": 86,
+    "bend": 12
+   }
+  }
+ },
+ {
+  "id": 34,
+  "name": "Cable Lateral Raises",
+  "view": "front",
+  "muscles": [
+   "sideDelts"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "shift": -10,
+  "gear": [
+   {
+    "kind": "post",
+    "from": [
+     -64,
+     -2
+    ],
+    "to": [
+     -64,
+     -200
+    ],
+    "width": 7
+   },
+   {
+    "kind": "cable",
+    "from": [
+     -64,
+     -18
+    ],
+    "side": 1
+   }
+  ],
+  "from": {
+   "hip": [
+    0,
+    -100.2
+   ],
+   "arm": {
+    "hand": [
+     -4,
+     -101
+    ],
+    "elbow": 1
+   },
+   "otherArm": {
+    "hand": [
+     -55,
+     -128
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -100.2
+   ],
+   "arm": {
+    "hand": [
+     76,
+     -150
+    ],
+    "elbow": 1
+   },
+   "otherArm": {
+    "hand": [
+     -55,
+     -128
+    ],
+    "elbow": 1
+   }
+  }
+ },
+ {
+  "id": 25,
+  "name": "Shrugs",
+  "view": "front",
+  "gear": [
+   {
+    "kind": "dumbbells"
+   }
+  ],
+  "muscles": [
+   "traps"
+  ],
+  "timing": [
+   0.1,
+   0.4,
+   0.55,
+   0.92
+  ],
+  "from": {
+   "hip": [
+    0,
+    -100.2
+   ],
+   "arm": {
+    "upper": 5,
+    "bend": 2
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -100.2
+   ],
+   "shrug": 9,
+   "arm": {
+    "upper": 5,
+    "bend": 2
+   }
+  }
+ },
+ {
+  "id": 49,
+  "name": "Arnold Press",
+  "view": "front",
+  "legsFront": true,
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -24,
+     -46
+    ],
+    "to": [
+     24,
+     -46
+    ],
+    "legs": [
+     0
+    ]
+   },
+   {
+    "kind": "dumbbells",
+    "profile": true
+   }
+  ],
+  "muscles": [
+   "frontDelts",
+   "sideDelts",
+   "triceps"
+  ],
+  "timing": [
+   0.1,
+   0.5,
+   0.58,
+   0.95
+  ],
+  "from": {
+   "hip": [
+    0,
+    -55
+   ],
+   "thigh": 90,
+   "thighLength": 0.36,
+   "shin": 2,
+   "arm": {
+    "upper": -26,
+    "bend": 206,
+    "upperLength": 0.58
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -55
+   ],
+   "thigh": 90,
+   "thighLength": 0.36,
+   "shin": 2,
+   "arm": {
+    "upper": 168,
+    "bend": 4
+   }
+  }
+ },
+ {
+  "id": 51,
+  "name": "Rear Delt Flyes",
+  "view": "front",
+  "gear": [
+   {
+    "kind": "dumbbells"
+   }
+  ],
+  "muscles": [
+   "rearDelts",
+   "traps"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "from": {
+   "hip": [
+    0,
+    -98.7
+   ],
+   "torsoLength": 0.5,
+   "headHeight": -1.3,
+   "thighLength": 0.97,
+   "arm": {
+    "upper": 4,
+    "bend": 8
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -98.7
+   ],
+   "torsoLength": 0.5,
+   "headHeight": -1.3,
+   "thighLength": 0.97,
+   "arm": {
+    "upper": 84,
+    "bend": 14
+   }
+  }
+ },
+ {
+  "id": 39,
+  "name": "Cable Crossovers",
+  "view": "front",
+  "muscles": [
+   "chest"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "gear": [
+   {
+    "kind": "cable",
+    "from": [
+     76,
+     -206
+    ],
+    "side": 1,
+    "stack": true
+   },
+   {
+    "kind": "cable",
+    "from": [
+     -76,
+     -206
+    ],
+    "side": -1,
+    "stack": true
+   }
+  ],
+  "from": {
+   "hip": [
+    0,
+    -100.2
+   ],
+   "arm": {
+    "hand": [
+     54,
+     -170
+    ],
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -100.2
+   ],
+   "arm": {
+    "hand": [
+     6,
+     -112
+    ],
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 67,
+  "name": "Hip Abductions",
+  "view": "front",
+  "legsFront": true,
+  "muscles": [
+   "glutes"
+  ],
+  "timing": [
+   0.1,
+   0.45,
+   0.55,
+   0.95
+  ],
+  "gear": [
+   {
+    "kind": "pad",
+    "from": [
+     -24,
+     -44
+    ],
+    "to": [
+     24,
+     -44
+    ],
+    "legs": [
+     0
+    ]
+   },
+   {
+    "kind": "kneepads"
+   },
+   {
+    "kind": "handle"
+   }
+  ],
+  "from": {
+   "hip": [
+    0,
+    -55
+   ],
+   "thigh": 90,
+   "thighLength": 0.17,
+   "shin": 1,
+   "arm": {
+    "hand": [
+     30,
+     -50
+    ],
+    "elbow": -1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -55
+   ],
+   "thigh": 90,
+   "thighLength": 0.7,
+   "shin": 1,
+   "arm": {
+    "hand": [
+     30,
+     -50
+    ],
+    "elbow": -1
+   }
+  }
+ },
+ {
+  "id": 70,
+  "name": "Side Plank",
+  "view": "front",
+  "muscles": [
+   "obliques"
+  ],
+  "timing": [
+   0.08,
+   0.32,
+   0.88,
+   0.97
+  ],
+  "seconds": 4,
+  "shift": -6,
+  "shadow": [
+   14,
+   0
+  ],
+  "shadowWidth": 92,
+  "from": {
+   "hip": [
+    -7,
+    -21.7
+   ],
+   "turn": -87,
+   "lean": 60,
+   "thigh": -1,
+   "shin": 0,
+   "arm": {
+    "hand": [
+     2,
+     15
+    ],
+    "on": "torso",
+    "elbow": -1
+   },
+   "otherArm": {
+    "upper": 0,
+    "bend": -90,
+    "foreLength": 0.3
+   }
+  },
+  "to": {
+   "hip": [
+    -4.3,
+    -43.3
+   ],
+   "turn": -71,
+   "lean": 0,
+   "thigh": -1,
+   "shin": 0,
+   "arm": {
+    "hand": [
+     2,
+     15
+    ],
+    "on": "torso",
+    "elbow": -1
+   },
+   "otherArm": {
+    "upper": 0,
+    "bend": -90,
+    "foreLength": 0.3
+   }
+  }
+ },
+ {
+  "id": 73,
+  "name": "Russian Twists",
+  "view": "front",
+  "legsFront": true,
+  "gear": [
+   {
+    "kind": "plate",
+    "radius": 10
+   }
+  ],
+  "muscles": [
+   "obliques",
+   "abs"
+  ],
+  "timing": [
+   0.08,
+   0.45,
+   0.55,
+   0.92
+  ],
+  "seconds": 2.6,
+  "zoom": 1.35,
+  "shadowWidth": 52,
+  "shadow": [
+   0,
+   0
+  ],
+  "from": {
+   "hip": [
+    0,
+    -16
+   ],
+   "torsoLength": 0.8,
+   "lean": 8,
+   "thigh": 158,
+   "thighLength": 0.62,
+   "shin": 8,
+   "shinLength": 0.62,
+   "arm": {
+    "hand": [
+     24,
+     -30
+    ],
+    "elbow": 1
+   },
+   "otherArm": {
+    "hand": [
+     24,
+     -30
+    ],
+    "elbow": 1
+   }
+  },
+  "to": {
+   "hip": [
+    0,
+    -16
+   ],
+   "torsoLength": 0.8,
+   "lean": -8,
+   "thigh": 158,
+   "thighLength": 0.62,
+   "shin": 8,
+   "shinLength": 0.62,
+   "arm": {
+    "hand": [
+     -24,
+     -30
+    ],
+    "elbow": 1
+   },
+   "otherArm": {
+    "hand": [
+     -24,
+     -30
+    ],
+    "elbow": 1
    }
   }
  }

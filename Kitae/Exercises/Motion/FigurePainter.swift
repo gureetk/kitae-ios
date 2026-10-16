@@ -14,9 +14,11 @@ nonisolated struct FigurePalette: Sendable {
     var gearFace: Color
     var prop: Color
     var shadow: Color
+    /// The card behind the figure, for the thin outlines that set front-view limbs apart.
+    var card: Color
 }
 
-/// Draws an exercise's figure, its worked muscles and its gear into a Canvas, back to front:
+/// Draws an exercise's figure, its worked muscles and its gear into a Canvas. From the side, back to front:
 /// the shadow, frames and weight stacks, the far arm and leg, benches and seats, the body and
 /// head, pads in front of it, cables and bars, the near leg and arm, and what the near hand holds.
 /// scripts/motions/motion.js draws the same way, for checking poses as pictures.
@@ -27,7 +29,11 @@ nonisolated struct FigurePainter: Sendable {
     /// The figure `t` of the way through a loop (0…1), standing on the bottom of `size`.
     func draw(at t: Double, in context: inout GraphicsContext, size: CGSize) {
         place(&context, size)
-        draw(Figure(motion.pose(at: t)), in: &context)
+        let k = motion.progress(at: t)
+        switch motion.keyframes {
+        case let .side(from, to): draw(Figure(.lerp(from, to, k)), in: &context)
+        case let .front(from, to): draw(FrontFigure(.lerp(from, to, k)), in: &context)
+        }
     }
 
     /// For Reduce Motion: the end pose, with the start pose faintly behind it.
@@ -35,8 +41,14 @@ nonisolated struct FigurePainter: Sendable {
         place(&context, size)
         var ghost = context
         ghost.opacity = 0.4
-        ghost.drawLayer { layer in draw(Figure(motion.from), in: &layer) }
-        draw(Figure(motion.to), in: &context)
+        switch motion.keyframes {
+        case let .side(from, to):
+            ghost.drawLayer { layer in draw(Figure(from), in: &layer) }
+            draw(Figure(to), in: &context)
+        case let .front(from, to):
+            ghost.drawLayer { layer in draw(FrontFigure(from), in: &layer) }
+            draw(FrontFigure(to), in: &context)
+        }
     }
 
     private func place(_ context: inout GraphicsContext, _ size: CGSize) {
@@ -84,7 +96,15 @@ nonisolated struct FigurePainter: Sendable {
             fill(FigureShapes.circle(at, r * 0.21), c.body)
         }
         func pad(_ g: Gear) {
-            guard let from = g.from, let to = g.to else { return }
+            var from = g.from, to = g.to
+            if g.on == "back" {
+                from = f.torso(g.top, g.out ?? -12.5)
+                to = f.torso(g.bottom, (g.out ?? -12.5) - 1)
+            } else if g.on == "front" {
+                from = f.torso(g.bottom, g.out ?? 13.5)
+                to = f.torso(g.top, g.out ?? 13.5)
+            }
+            guard let from, let to else { return }
             let d = (to - from).unit, right = Vec(-d.y, d.x), h = g.thick / 2
             for x in g.legs {
                 let k = (x - from.x) / (to.x - from.x == 0 ? 1 : to.x - from.x)
@@ -93,6 +113,15 @@ nonisolated struct FigurePainter: Sendable {
                 fill(FigureShapes.capsule(Vec(x - 8, -1.6), Vec(x + 8, -1.6), 1.6, 1.6), c.prop)
             }
             fill(FigureShapes.capsule(from + right * h, to + right * h, h, h), c.prop)
+        }
+        // A goblet squat's dumbbell, held upright at the chest.
+        func goblet() {
+            let at = f.torso(40, 19), d = f.spine(at: 40), n = d.front
+            fill(FigureShapes.capsule(at - d * 7, at + d * 7, 1.7, 1.7), c.gear)
+            for k in [-8.0, 8] {
+                let end = at + d * k
+                fill(FigureShapes.capsule(end - n * 6.5, end + n * 6.5, 2.8, 2.8), c.gear)
+            }
         }
         func dumbbell(_ a: ArmShape, near: Bool) {
             let g = a.grip
@@ -124,8 +153,10 @@ nonisolated struct FigurePainter: Sendable {
             let l = f.nearLeg
             switch name {
             case "ankle": return l.ankle
-            case "shin": return Vec.lerp(l.knee, l.ankle, 0.78)
+            case "shin": return Vec.lerp(l.knee, l.ankle, 0.8) + (l.ankle - l.knee).unit.front * 8
+            case "calf": return Vec.lerp(l.knee, l.ankle, 0.82) + (l.ankle - l.knee).unit.front * -8.5
             case "thigh": return Vec.lerp(l.hip, l.knee, 0.62) + (l.knee - l.hip).unit.front * 9
+            case "knee": return Vec.lerp(l.hip, l.knee, 0.86) + (l.knee - l.hip).unit.front * 9.5
             case "hips": return f.torso(-2, 11)
             case "chest": return f.torso(36, 15)
             default: return nearArm.grip
@@ -147,7 +178,7 @@ nonisolated struct FigurePainter: Sendable {
         }
 
         // The far side, a little behind the near one.
-        let dumbbells = motion.gear(.dumbbells)
+        let dumbbells = motion.gear(.dumbbells).filter { $0.on != "chest" }
         leg(LegShape(f.farLeg), c.far, c.muscleFar)
         arm(farArm, c.far, c.muscleFar)
         if !dumbbells.isEmpty, !dumbbells.contains(where: \.one) {
@@ -157,6 +188,15 @@ nonisolated struct FigurePainter: Sendable {
         // Benches, seats and pads under the body.
         for g in motion.gear(.pad) where !g.front {
             pad(g)
+        }
+
+        // A T-bar runs from its anchor on the floor, between the legs, to the hands; plates at its end.
+        for g in motion.gear(.tbar) {
+            guard let anchor = g.anchor else { continue }
+            let grip = nearArm.grip, d = (grip - anchor).unit, n = Vec(-d.y, d.x), end = grip + d * 12
+            let r = g.radius ?? 15
+            fill(FigureShapes.capsule(anchor, grip + d * 16, 1.8, 1.8), c.gear)
+            fill(FigureShapes.capsule(end - n * r, end + n * r, 3.4, 3.4), c.gear)
         }
 
         // The body.
@@ -190,6 +230,10 @@ nonisolated struct FigurePainter: Sendable {
             fill(FigureShapes.capsule(at, bar, 2.6, 2.6), c.gear)
             plate(at, g.radius ?? 17)
         }
+        // A front squat's bar rests on the front of the shoulders; drawn behind the head so the face stays clear.
+        for g in motion.gear(.barbell) where g.on == "front" {
+            plate(f.torso(50, 11) + Vec(5, 1), g.radius ?? 15)
+        }
 
         // Neck and head: a cranium and a jaw, so the face's direction reads.
         let headFront = Vec(-f.headDirection.y, f.headDirection.x)
@@ -214,6 +258,18 @@ nonisolated struct FigurePainter: Sendable {
             if let at = g.at { fill(FigureShapes.circle(at, 3.6), c.gear) }
         }
 
+        // Foot plates move with the near foot, under its sole.
+        for g in motion.gear(.footplate) {
+            let l = f.nearLeg, turn = l.foot * .pi / 180
+            let heel = l.ankle + Vec(-4.5, 2.9).rotated(by: turn), toe = l.ankle + Vec(17, 4.2).rotated(by: turn)
+            let d = (toe - heel).unit, n = Vec(-d.y, d.x), h = g.thick / 2
+            let mid = Vec.lerp(heel, toe, 0.5) + n * (4 + h)
+            fill(FigureShapes.capsule(mid - d * (g.length / 2), mid + d * (g.length / 2), h, h), c.prop)
+        }
+        if motion.gear(.dumbbells).contains(where: { $0.on == "chest" }) {
+            goblet()
+        }
+
         // The near side.
         leg(LegShape(f.nearLeg), c.body, c.muscle)
         arm(nearArm, c.body, c.muscle)
@@ -222,8 +278,14 @@ nonisolated struct FigurePainter: Sendable {
         for g in motion.gear(.barbell) where g.on == nil || g.on == "hands" {
             plate(nearArm.grip, g.radius ?? 17)
         }
+        for g in motion.gear(.barbell) where g.on == "hips" {
+            plate(f.torso(-1, 12), g.radius ?? 17)
+        }
         for g in motion.gear(.ezbar) {
             plate(nearArm.grip, g.radius ?? 12.5)
+        }
+        for g in motion.gear(.wheel) {
+            plate(nearArm.grip, g.radius ?? 8)
         }
         if !dumbbells.isEmpty {
             dumbbell(nearArm, near: true)
@@ -286,9 +348,9 @@ nonisolated private struct LegShape {
                                   FigureShapes.capsule(calf, l.ankle, 7.2, 3.9))
         foot = FigureShapes.union(FigureShapes.capsule(heel, toe, 4.5, 3.2),
                                   FigureShapes.capsule(l.ankle, heel, 3.9, 4.5))
-        quads = muscle(l.hip, l.knee, 10.4, 6.6, at: (0.12, 0.5, 0.9), widths: (0.55, 0.72, 0.7), side: 1)
-        hamstrings = muscle(l.hip, l.knee, 10.4, 6.6, at: (0.14, 0.5, 0.88), widths: (0.5, 0.62, 0.55), side: -1)
-        calves = muscle(l.knee, l.ankle, 7.0, 3.9, at: (0.08, 0.3, 0.62), widths: (0.62, 0.78, 0.5), side: -1)
+        quads = muscleShape(l.hip, l.knee, 10.4, 6.6, at: (0.12, 0.5, 0.9), widths: (0.55, 0.72, 0.7), side: 1)
+        hamstrings = muscleShape(l.hip, l.knee, 10.4, 6.6, at: (0.14, 0.5, 0.88), widths: (0.5, 0.62, 0.55), side: -1)
+        calves = muscleShape(l.knee, l.ankle, 7.0, 3.9, at: (0.08, 0.3, 0.62), widths: (0.62, 0.78, 0.5), side: -1)
     }
 }
 
@@ -316,21 +378,21 @@ nonisolated private struct ArmShape {
         // The biceps grows a little as the elbow bends.
         let bent = acos(min(1, max(-1, ud.x * fd.x + ud.y * fd.y))) * 180 / .pi
         let k = min(1, bent / 130)
-        biceps = muscle(a.shoulder, a.elbow, 6.8, 4.5, at: (0.2, 0.52, 0.86), widths: (0.55, 0.8 + 0.15 * k, 0.6), side: 1)
-        triceps = muscle(a.shoulder, a.elbow, 6.8, 4.5, at: (0.16, 0.5, 0.86), widths: (0.55, 0.72, 0.58), side: -1)
-        forearms = muscle(a.elbow, a.wrist, 5.0, 3.3, at: (0.1, 0.32, 0.75), widths: (0.8, 0.85, 0.6), side: 1)
+        biceps = muscleShape(a.shoulder, a.elbow, 6.8, 4.5, at: (0.2, 0.52, 0.86), widths: (0.55, 0.8 + 0.15 * k, 0.6), side: 1)
+        triceps = muscleShape(a.shoulder, a.elbow, 6.8, 4.5, at: (0.16, 0.5, 0.86), widths: (0.55, 0.72, 0.58), side: -1)
+        forearms = muscleShape(a.elbow, a.wrist, 5.0, 3.3, at: (0.1, 0.32, 0.75), widths: (0.8, 0.85, 0.6), side: 1)
     }
 
     /// The deltoid over the shoulder: its front (1), middle (0) or rear (-1).
     func delts(_ side: Double) -> Path {
         let w = side == 0 ? (1.0, 1.0, 0.65) : (0.62, 0.62, 0.45)
-        return muscle(arm.shoulder, arm.elbow, 6.8, 4.5, at: (0, 0.17, 0.4), widths: w, side: side)
+        return muscleShape(arm.shoulder, arm.elbow, 6.8, 4.5, at: (0, 0.17, 0.4), widths: w, side: side)
     }
 }
 
 /// A muscle hugging one side of a limb from `a` to `b` (radii `ra` and `rb`): thicker in its
 /// middle than at its ends. `side` is 1 for the front of the limb, -1 for the back, 0 for both.
-nonisolated private func muscle(_ a: Vec, _ b: Vec, _ ra: Double, _ rb: Double,
+nonisolated func muscleShape(_ a: Vec, _ b: Vec, _ ra: Double, _ rb: Double,
                                 at k: (Double, Double, Double), widths w: (Double, Double, Double),
                                 side: Double) -> Path {
     let out = (b - a).unit.front * side

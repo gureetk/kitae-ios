@@ -80,15 +80,17 @@ function pose(j) {
     foot: j.foot ?? 0, farAnkle: j.farAnkle ? V(j.farAnkle) : null, farFoot: j.farFoot ?? null,
     knee: j.knee ?? -1, arm: arm(j.arm), farArm: j.farArm ? arm(j.farArm) : null,
     thigh: j.thigh ?? null, shin: j.shin ?? null, farThigh: j.farThigh ?? null, farShin: j.farShin ?? null,
-    curl: j.curl ?? 0, shrug: j.shrug ?? 0,
+    curl: j.curl ?? 0, shrug: j.shrug ?? 0, kneeAt: j.kneeAt ? V(j.kneeAt) : null,
   };
 }
 function motion(j) {
+  const front = j.view === 'front';
   return {
-    id: j.id, name: j.name, gear: (j.gear || []).map(gearOf), shadowWidth: j.shadowWidth ?? 40,
+    id: j.id, name: j.name, view: front ? 'front' : 'side', legsFront: j.legsFront ?? false,
+    gear: (j.gear || []).map(gearOf), shadowWidth: j.shadowWidth ?? 40,
     muscles: new Set(j.muscles || []), timing: j.timing || [0.08, 0.5, 0.58, 0.96],
     seconds: j.seconds ?? 2.4, shift: j.shift ?? 0, zoom: j.zoom ?? 1, shadow: j.shadow ? V(j.shadow) : v(4, 0),
-    from: pose(j.from), to: pose(j.to),
+    from: front ? frontPose(j.from) : pose(j.from), to: front ? frontPose(j.to) : pose(j.to),
   };
 }
 function lerpArm(a, b, t) {
@@ -105,13 +107,15 @@ function lerpPose(a, b, t) {
     farArm: mix(a.farArm, b.farArm, lerpArm),
     thigh: mix(a.thigh, b.thigh, lerp), shin: mix(a.shin, b.shin, lerp),
     farThigh: mix(a.farThigh, b.farThigh, lerp), farShin: mix(a.farShin, b.farShin, lerp),
-    curl: lerp(a.curl, b.curl, t), shrug: lerp(a.shrug, b.shrug, t),
+    curl: lerp(a.curl, b.curl, t), shrug: lerp(a.shrug, b.shrug, t), kneeAt: mix(a.kneeAt, b.kneeAt, lerpV),
   };
 }
 
 // The Figure struct.
 const smooth01 = x => { const k = Math.min(1, Math.max(0, x)); return k * k * (3 - 2 * k); };
 function figure(p) {
+  // A kneeling pose pinned at the knee (`kneeAt`) finds its hip from the thigh's angle.
+  if (p.kneeAt && p.thigh != null) p = { ...p, hip: sub(p.kneeAt, mul(dir(p.thigh), BODY.thigh)) };
   const spine = dir(p.lean), fr = v(-spine.y, spine.x);
   const pivot = add(p.hip, mul(spine, 18));
   const torso = (a, b) => {
@@ -141,8 +145,9 @@ function figure(p) {
     const elbow = joint(shoulder, target, BODY.upperArm * ap.scale * ap.upperLength, BODY.forearm * ap.scale, ap.elbow);
     return { shoulder, elbow, wrist: add(elbow, mul(unit(sub(target, elbow)), BODY.forearm * ap.scale)), scale: ap.scale };
   };
+  const spineAt = a => rotate(spine, p.curl * Math.PI / 180 * smooth01((a - 10) / 16));
   return {
-    pose: p, spine, front: fr, torso, headDirection: hd, neckBase, neckTop,
+    pose: p, spine, front: fr, torso, spineAt, headDirection: hd, neckBase, neckTop,
     head: add(neckTop, add(mul(hd, 9.5), mul(hf, 1.5))),
     nearLeg: leg(p.ankle, p.foot, p.thigh, p.shin, v(0, 0)),
     farLeg: leg(p.farAnkle ?? p.ankle, p.farFoot ?? p.foot, p.farThigh ?? p.thigh, p.farShin ?? p.shin, BODY.far),
@@ -202,6 +207,8 @@ function gearOf(j) {
     at: j.at ? V(j.at) : null, thick: j.thick ?? 8, legs: j.legs ?? [], width: j.width ?? 4,
     handle: j.handle ?? 'bar', stack: j.stack ?? false, profile: j.profile ?? false, one: j.one ?? false, hang: j.hang ?? false,
     radius: j.radius ?? null, front: j.front ?? false,
+    top: j.top ?? 70, bottom: j.bottom ?? 0, out: j.out ?? null, length: j.length ?? 40,
+    anchor: j.anchor ? V(j.anchor) : null, side: j.side ?? 1,
   };
 }
 
@@ -242,11 +249,21 @@ function paint(m, F, c) {
     switch (name) {
       case 'hands': return nearArm.grip;
       case 'ankle': return nl.ankle;
-      case 'shin': return lerpV(nl.knee, nl.ankle, 0.78);
+      case 'shin': return add(lerpV(nl.knee, nl.ankle, 0.8), mul(front(unit(sub(nl.ankle, nl.knee))), 8));
+      case 'calf': return add(lerpV(nl.knee, nl.ankle, 0.82), mul(front(unit(sub(nl.ankle, nl.knee))), -8.5));
       case 'thigh': return add(lerpV(nl.hip, nl.knee, 0.62), mul(front(unit(sub(nl.knee, nl.hip))), 9));
+      case 'knee': return add(lerpV(nl.hip, nl.knee, 0.86), mul(front(unit(sub(nl.knee, nl.hip))), 9.5));
       case 'hips': return F.torso(-2, 11);
       case 'chest': return F.torso(36, 15);
       default: return nearArm.grip;
+    }
+  };
+  const goblet = () => {
+    const at = F.torso(40, 19), d = F.spineAt(40), n = front(d);
+    fill(capsule(add(at, mul(d, -7)), add(at, mul(d, 7)), 1.7, 1.7), c.gear);
+    for (const k of [-8, 8]) {
+      const e = add(at, mul(d, k));
+      fill(capsule(add(e, mul(n, -6.5)), add(e, mul(n, 6.5)), 2.8, 2.8), c.gear);
     }
   };
   const dumbbell = (arm, near) => {
@@ -281,11 +298,16 @@ function paint(m, F, c) {
   // The far side.
   leg(farLeg, c.far, c.muscleFar);
   armDraw(farArm, c.far, c.muscleFar);
-  const hasDumbbells = gears('dumbbells').length > 0, oneDumbbell = gears('dumbbells').some(d => d.one);
+  const handDumbbells = gears('dumbbells').filter(d => d.on !== 'chest');
+  const hasDumbbells = handDumbbells.length > 0, oneDumbbell = handDumbbells.some(d => d.one);
   if (hasDumbbells && !oneDumbbell) dumbbell(farArm, false);
 
   // Benches, seats and pads, under the body.
   const pad = g => {
+    let from = g.from, to = g.to;
+    if (g.on === 'back') { from = F.torso(g.top, g.out ?? -12.5); to = F.torso(g.bottom, (g.out ?? -12.5) - 1); }
+    if (g.on === 'front') { from = F.torso(g.bottom, g.out ?? 13.5); to = F.torso(g.top, g.out ?? 13.5); }
+    g = { ...g, from, to };
     const d = unit(sub(g.to, g.from)), right = v(-d.y, d.x), h = g.thick / 2;
     for (const x of g.legs) {
       const k = (x - g.from.x) / (g.to.x - g.from.x || 1), top = add(lerpV(g.from, g.to, k), mul(right, h));
@@ -295,6 +317,13 @@ function paint(m, F, c) {
     fill(capsule(add(g.from, mul(right, h)), add(g.to, mul(right, h)), h, h), c.prop);
   };
   for (const g of gears('pad')) if (!g.front) pad(g);
+
+  // A T-bar runs from its anchor on the floor, between the legs, to the hands; plates at its end.
+  for (const g of gears('tbar')) {
+    const grip = nearArm.grip, d = unit(sub(grip, g.anchor)), n = v(-d.y, d.x), end = add(grip, mul(d, 12));
+    fill(capsule(g.anchor, add(grip, mul(d, 16)), 1.8, 1.8), c.gear);
+    fill(capsule(add(end, mul(n, -(g.radius ?? 15))), add(end, mul(n, g.radius ?? 15)), 3.4, 3.4), c.gear);
+  }
 
   // The body.
   const torsoPts = [[-7, 3], [2, 9], [16, 9], [29, 12.5], [41, 12.5], [50.5, 8],
@@ -315,6 +344,8 @@ function paint(m, F, c) {
     fill(capsule(pl, bar, 2.6, 2.6), c.gear);
     plate(pl, g.radius ?? 17);
   }
+  // A front squat's bar rests on the front of the shoulders; drawn behind the head so the face stays clear.
+  for (const g of gears('barbell')) if (g.on === 'front') plate(add(F.torso(50, 11), v(5, 1)), g.radius ?? 15);
 
   const hf = v(-F.headDirection.y, F.headDirection.x), turn = F.pose.head ?? (F.pose.lean + F.pose.curl);
   fill(capsule(F.neckBase, F.neckTop, 5.6, 5.0), c.body);
@@ -332,10 +363,22 @@ function paint(m, F, c) {
   }
   for (const g of gears('bar')) fill(circle(g.at, 3.6), c.gear);
 
+  // Foot plates move with the near foot, under its sole.
+  for (const g of gears('footplate')) {
+    const nl = F.nearLeg, turnF = nl.foot * Math.PI / 180;
+    const heel = add(nl.ankle, rotate(v(-4.5, 2.9), turnF)), toe = add(nl.ankle, rotate(v(17, 4.2), turnF));
+    const d = unit(sub(toe, heel)), n = v(-d.y, d.x), h = g.thick / 2;
+    const mid = add(lerpV(heel, toe, 0.5), mul(n, 4 + h));
+    fill(capsule(add(mid, mul(d, -g.length / 2)), add(mid, mul(d, g.length / 2)), h, h), c.prop);
+  }
+  if (gears('dumbbells').some(d => d.on === 'chest')) goblet();
+
   leg(nearLeg, c.body, c.muscle);
   armDraw(nearArm, c.body, c.muscle);
 
   for (const g of gears('barbell')) if (g.on === 'hands' || g.on == null) plate(nearArm.grip, g.radius ?? 17);
+  for (const g of gears('barbell')) if (g.on === 'hips') plate(F.torso(-1, 12), g.radius ?? 17);
+  for (const g of gears('wheel')) plate(nearArm.grip, g.radius ?? 8);
   for (const g of gears('ezbar')) plate(nearArm.grip, g.radius ?? 12.5);
   if (hasDumbbells) dumbbell(nearArm, true);
   for (const g of gears('cable')) {
@@ -357,18 +400,232 @@ function paint(m, F, c) {
   return { defs: defs.join(''), body: out.join('') };
 }
 
+// ----- The front view: the figure facing the viewer, for movements out to the sides -----
+// Angles work as in the side view for the +x arm and leg (the figure's left, on the right of the
+// picture); the other arm and leg mirror them unless `otherArm` says otherwise. `turn` turns the
+// whole figure (a side plank lies at about -80), `lean` bends the body sideways above the waist,
+// and `torsoLength`, `upperLength`, `foreLength`, `thighLength` and `shinLength` shorten parts that
+// point toward or away from the viewer.
+const FRONT = { shoulder: 19.5, hipJoint: 9 };
+const FRONT_TORSO = [[-10, 0], [-8, 9], [-4, 15], [4, 16.5], [14, 14], [24, 15], [34, 18], [42, 21], [48, 22],
+  [51.5, 17.5], [54, 10], [55.5, 5], [55.5, -5], [54, -10], [51.5, -17.5], [48, -22], [42, -21], [34, -18],
+  [24, -15], [14, -14], [4, -16.5], [-4, -15], [-8, -9]];
+function frontArm(a) {
+  if (!a) return null;
+  const lengths = { upperLength: a.upperLength ?? 1, foreLength: a.foreLength ?? 1 };
+  return 'upper' in a ? { kind: 'swing', upper: a.upper, bend: a.bend ?? 0, ...lengths }
+    : { kind: 'reach', hand: V(a.hand), onTorso: a.on === 'torso', elbow: a.elbow ?? 1, ...lengths };
+}
+function frontPose(j) {
+  return {
+    hip: V(j.hip), turn: j.turn ?? 0, lean: j.lean ?? 0, torsoLength: j.torsoLength ?? 1, shrug: j.shrug ?? 0,
+    head: j.head ?? 0, headHeight: j.headHeight ?? 1, thigh: j.thigh ?? 3, thighLength: j.thighLength ?? 1, shin: j.shin ?? 1.5,
+    shinLength: j.shinLength ?? 1, arm: frontArm(j.arm), otherArm: frontArm(j.otherArm),
+  };
+}
+function lerpFrontArm(a, b, t) {
+  if (a.kind !== b.kind) return t < 0.5 ? a : b;
+  const s = { ...a, upperLength: lerp(a.upperLength, b.upperLength, t), foreLength: lerp(a.foreLength, b.foreLength, t) };
+  return a.kind === 'swing' ? { ...s, upper: lerp(a.upper, b.upper, t), bend: lerp(a.bend, b.bend, t) }
+    : { ...s, hand: lerpV(a.hand, b.hand, t) };
+}
+function lerpFront(a, b, t) {
+  const L = k => lerp(a[k], b[k], t);
+  return {
+    hip: lerpV(a.hip, b.hip, t), turn: L('turn'), lean: L('lean'), torsoLength: L('torsoLength'), shrug: L('shrug'),
+    head: L('head'), headHeight: L('headHeight'), thigh: L('thigh'), thighLength: L('thighLength'), shin: L('shin'), shinLength: L('shinLength'),
+    arm: lerpFrontArm(a.arm, b.arm, t),
+    otherArm: a.otherArm && b.otherArm ? lerpFrontArm(a.otherArm, b.otherArm, t) : (a.otherArm ?? b.otherArm),
+  };
+}
+const frameSide = deg => { const r = deg * Math.PI / 180; return v(Math.cos(r), Math.sin(r)); };
+function frontFigure(p) {
+  const up = dir(p.turn), side = frameSide(p.turn), k = p.torsoLength, turnR = p.turn * Math.PI / 180;
+  const pelvis = (a, b) => add(p.hip, add(mul(up, a), mul(side, b)));
+  const pivot = pelvis(18 * k, 0);
+  // Shrugging lifts the shoulders fully and the base of the neck a little.
+  const lift = a => p.shrug * smooth01((a - 42) / 4) * (a >= 55 ? 0.35 : 1);
+  const torso = (a, b) => {
+    const q = pelvis((a + lift(a)) * k, b);
+    return p.lean ? add(pivot, rotate(sub(q, pivot), p.lean * Math.PI / 180 * smooth01((a - 10) / 16))) : q;
+  };
+  const upperUp = dir(p.turn + p.lean), headUp = dir(p.turn + p.lean + p.head);
+  const neckBase = torso(55, 0), neckTop = add(neckBase, mul(upperUp, 9 * k));
+  // A head bent forward with the body sits lower, in front of the shoulders (`headHeight` below 1).
+  const head = add(neckTop, mul(headUp, 10.5 * p.headHeight));
+  const showsNeck = p.headHeight > 0.5;
+  const arm = (ap, s, explicit) => {
+    const shoulder = torso(48, FRONT.shoulder * s), m = d => v(d.x * s, d.y);
+    const l1 = BODY.upperArm * ap.upperLength, l2 = BODY.forearm * ap.foreLength;
+    let elbow, wrist;
+    if (ap.kind === 'swing') {
+      elbow = add(shoulder, mul(m(dir(180 - ap.upper)), l1));
+      wrist = add(elbow, mul(m(dir(180 - ap.upper - ap.bend)), l2));
+    } else {
+      const target = ap.onTorso ? torso(ap.hand.x, ap.hand.y * s)
+        : explicit ? ap.hand : v(p.hip.x + (ap.hand.x - p.hip.x) * s, ap.hand.y);
+      elbow = joint(shoulder, target, l1, l2, ap.elbow * s);
+      wrist = add(elbow, mul(unit(sub(target, elbow)), l2));
+    }
+    return { shoulder, elbow, wrist, side: s, foreLength: ap.foreLength };
+  };
+  const leg = s => {
+    const hip = pelvis(0, FRONT.hipJoint * s), m = d => v(d.x * s, d.y);
+    const knee = add(hip, mul(rotate(m(dir(180 - p.thigh)), turnR), BODY.thigh * p.thighLength));
+    const ankle = add(knee, mul(rotate(m(dir(180 - p.shin)), turnR), BODY.shin * p.shinLength));
+    return { hip, knee, ankle, side: s };
+  };
+  return {
+    pose: p, up, side, upperUp, headUp, torso, neckBase, neckTop, head, showsNeck,
+    turnAt: a => p.turn + p.lean * smooth01((a - 10) / 16),
+    arms: [arm(p.otherArm ?? p.arm, -1, !!p.otherArm), arm(p.arm, 1, false)],
+    legs: [leg(-1), leg(1)],
+  };
+}
+
+// Draws a front figure back to front: shadow, frames and stacks, pads, legs, body and muscles
+// (legs in front of the body when they come toward the viewer), head, cables, arms, and gear in
+// the hands. Arms, and legs in front of the body, get a thin outline in the card's colour so they
+// stand apart from the body behind them.
+function paintFront(m, F, c) {
+  const defs = [], out = [];
+  const fill = (d, col) => out.push(`<path d="${d}" fill="${col}"/>`);
+  const clipId = (d, evenOdd) => {
+    const id = `k${++clipSeq}`;
+    defs.push(`<clipPath id="${id}"><path d="${d}"${evenOdd ? ' clip-rule="evenodd"' : ''}/></clipPath>`);
+    return id;
+  };
+  const fillInside = (clip, d, col) => out.push(`<path d="${d}" fill="${col}" clip-path="url(#${clipId(clip)})"/>`);
+  // An outline in the card's colour, left off around a joint so limbs stay joined to the body.
+  const separate = (d, joint, r) => {
+    const keep = clipId(`M-2000 -2000H2000V2000H-2000Z${circle(joint, r)}`, true);
+    out.push(`<path d="${d}" fill="none" stroke="${c.card}" stroke-width="3.2" stroke-linejoin="round" clip-path="url(#${keep})"/>`);
+  };
+  const has = x => m.muscles.has(x);
+  const gears = kind => m.gear.filter(g => g.kind === kind);
+  const plate = (at, r) => { fill(circle(at, r), c.gear); fill(circle(at, r * 0.735), c.gearFace); fill(circle(at, r * 0.21), c.body); };
+  const turnDeg = F.pose.turn, turnR = turnDeg * Math.PI / 180;
+
+  const legParts = l => {
+    const mid = lerpV(l.hip, l.knee, 0.42), calf = lerpV(l.knee, l.ankle, 0.3);
+    const thigh = capsule(l.hip, mid, 10.4, 9.2) + capsule(mid, l.knee, 9.2, 6.6);
+    const shin = capsule(l.knee, calf, 6.6, 7.2) + capsule(calf, l.ankle, 7.2, 3.9);
+    const foot = ellipse(add(l.ankle, rotate(v(1.5 * l.side, 3.4), turnR)), 5.2, 3.6, turnDeg);
+    return { thigh, shin, foot, all: thigh + shin + foot };
+  };
+  const drawLegs = inFront => {
+    for (const l of F.legs) {
+      const s = legParts(l);
+      if (inFront) separate(s.all, l.hip, 11.5);
+      fill(s.thigh, c.body); fill(s.shin, c.body); fill(s.foot, c.body);
+    }
+  };
+  const armParts = a => {
+    const fd = unit(sub(a.wrist, a.elbow)), fore = lerpV(a.elbow, a.wrist, 0.3);
+    const grip = add(a.wrist, mul(fd, 6.5 * Math.max(a.foreLength, 0.5)));
+    const upper = capsule(a.shoulder, a.elbow, 6.8, 4.5);
+    const forearm = capsule(a.elbow, fore, 4.5, 5.0) + capsule(fore, a.wrist, 5.0, 3.3);
+    const hand = capsule(a.wrist, grip, 3.6, 3.9);
+    return { a, fd, grip, upper, forearm, hand, all: upper + forearm + hand };
+  };
+  const arms = F.arms.map(armParts);
+  const sideGrip = s => arms.find(x => x.a.side === s).grip;
+
+  fill(ellipse(m.shadow, m.shadowWidth ?? 40, 3.4, 0), c.shadow);
+  for (const g of gears('cable')) if (g.stack) fill(capsule(v(g.from.x, -3), v(g.from.x, g.from.y), 6.5, 6.5), c.prop);
+  for (const g of gears('post')) fill(capsule(g.from, g.to, g.width / 2, g.width / 2), c.prop);
+  const pad = g => {
+    const d = unit(sub(g.to, g.from)), right = v(-d.y, d.x), h = g.thick / 2;
+    for (const x of g.legs) {
+      const k = (x - g.from.x) / (g.to.x - g.from.x || 1), top = add(lerpV(g.from, g.to, k), mul(right, h));
+      fill(capsule(top, v(x, -2), 1.9, 1.9), c.prop);
+      fill(capsule(v(x - 8, -1.6), v(x + 8, -1.6), 1.6, 1.6), c.prop);
+    }
+    fill(capsule(add(g.from, mul(right, h)), add(g.to, mul(right, h)), h, h), c.prop);
+  };
+  for (const g of gears('pad')) if (!g.front) pad(g);
+  if (!m.legsFront) drawLegs(false);
+
+  const torso = outline(FRONT_TORSO.map(([a, b]) => F.torso(a, b)));
+  fill(torso, c.body);
+  const both = f => { f(1); f(-1); };
+  const ta = F.turnAt;
+  if (has('chest')) both(s => fillInside(torso, ellipse(F.torso(37.5, 8.5 * s), 8.2, 6.4, ta(37.5)), c.muscle));
+  if (has('abs')) fillInside(torso, capsule(F.torso(5, 0), F.torso(31, 0), 5, 5.2), c.muscle);
+  if (has('obliques')) both(s => fillInside(torso, ellipse(F.torso(16, 12 * s), 3.6, 8.5, ta(16)), c.muscle));
+  if (has('lats')) both(s => fillInside(torso, ellipse(F.torso(31, 16 * s), 3.4, 8, ta(31)), c.muscle));
+  if (has('traps')) both(s => fillInside(torso, capsule(F.torso(53.5, 6 * s), F.torso(50.5, 15.5 * s), 3.2, 3.6), c.muscle));
+  const glutes = s => m.legsFront ? ellipse(F.torso(2, 17 * s), 3.2, 7, ta(2)) : ellipse(F.torso(1, 13.5 * s), 3.6, 7.5, ta(1));
+  if (has('glutes') && !m.legsFront) both(s => fillInside(torso, glutes(s), c.muscle));
+  if (m.legsFront) drawLegs(true);
+  if (has('glutes') && m.legsFront) both(s => fillInside(torso + legParts(F.legs[s > 0 ? 1 : 0]).thigh, glutes(s), c.muscle));
+
+  const headTurn = turnDeg + F.pose.lean + F.pose.head;
+  // A head hanging forward (headHeight below 0.5) shows its crown in front of the shoulders, without a neck or jaw.
+  if (F.showsNeck) {
+    fill(capsule(F.neckBase, F.neckTop, 5.6, 5.0), c.body);
+    fill(ellipse(add(F.head, mul(F.headUp, 1.5)), 9.8, 10.4, headTurn), c.body);
+    fill(ellipse(sub(F.head, mul(F.headUp, 5)), 7.2, 6.8, headTurn), c.body);
+  } else {
+    out.push(`<path d="${circle(F.head, 10.6)}" fill="none" stroke="${c.card}" stroke-width="3.2"/>`);
+    fill(circle(F.head, 10), c.body);
+  }
+  for (const g of gears('pad')) if (g.front) pad(g);
+
+  for (const g of gears('cable')) {
+    const end = sideGrip(g.side);
+    fill(capsule(g.from, end, 0.8, 0.8), c.gear);
+    fill(circle(g.from, 4.2), c.gear); fill(circle(g.from, 1.7), c.prop);
+  }
+
+  const delts = has('frontDelts') || has('sideDelts') || has('rearDelts');
+  for (const p of arms) {
+    separate(p.all, p.a.shoulder, 9);
+    fill(p.upper, c.body); fill(p.forearm, c.body); fill(p.hand, c.body);
+    const a = p.a;
+    if (delts) fillInside(p.upper + circle(a.shoulder, 7.2), muscle(a.shoulder, a.elbow, 6.8, 4.5, [0, 0.16, 0.38], [1, 1, 0.7], 0), c.muscle);
+    if (has('triceps')) fillInside(p.upper, muscle(a.shoulder, a.elbow, 6.8, 4.5, [0.25, 0.55, 0.88], [0.5, 0.6, 0.5], a.side), c.muscle);
+    if (has('biceps')) fillInside(p.upper, muscle(a.shoulder, a.elbow, 6.8, 4.5, [0.25, 0.55, 0.88], [0.5, 0.62, 0.5], -a.side), c.muscle);
+  }
+
+  const dumbbells = gears('dumbbells');
+  for (const p of arms) {
+    if (!dumbbells.length || (dumbbells.some(d => d.one) && p.a.side !== 1)) continue;
+    const g = p.grip;
+    if (dumbbells.some(d => d.profile)) {
+      const axis = front(p.fd);
+      fill(capsule(add(g, mul(axis, -7)), add(g, mul(axis, 7)), 1.7, 1.7), c.gear);
+      for (const k of [-8, 8]) {
+        const e = add(g, mul(axis, k));
+        fill(capsule(add(e, mul(p.fd, -6.5)), add(e, mul(p.fd, 6.5)), 2.8, 2.8), c.gear);
+      }
+    } else {
+      fill(hexagon(g, 8.6, 30), c.gear); fill(hexagon(g, 6.0, 30), c.gearFace); fill(circle(g, 2.4), c.body);
+    }
+  }
+  for (const g of gears('plate')) plate(sideGrip(1), g.radius ?? 12);
+  for (const g of gears('handle')) for (const p of arms) fill(circle(p.grip, 3.4), c.gear);
+  for (const g of gears('kneepads')) for (const l of F.legs) {
+    const at = add(l.knee, mul(F.side, 10.5 * l.side));
+    fill(capsule(add(at, mul(F.up, 8)), add(at, mul(F.up, -8)), 4, 4), c.prop);
+  }
+  return { defs: defs.join(''), body: out.join('') };
+}
+
 // One card at (x, y) of size w × h, laid out like FigurePainter.place.
 function card(m, t, theme, x, y, w, h, still = false) {
   const c = THEMES[theme];
   const scale = Math.min(1.15, (h - 34) / 190) * m.zoom;
   const g = `translate(${(x + w / 2 + m.shift * scale).toFixed(2)} ${(y + h - 20).toFixed(2)}) scale(${scale.toFixed(4)})`;
   let defs = '', body = '';
+  const draw = p => m.view === 'front' ? paintFront(m, frontFigure(p), c) : paint(m, figure(p), c);
+  const blend = (a, b, k) => m.view === 'front' ? lerpFront(a, b, k) : lerpPose(a, b, k);
   if (still) {
-    const a = paint(m, figure(m.from), c), b = paint(m, figure(m.to), c);
+    const a = draw(m.from), b = draw(m.to);
     defs = a.defs + b.defs;
     body = `<g opacity="0.4">${a.body}</g>${b.body}`;
   } else {
-    const p = paint(m, figure(lerpPose(m.from, m.to, phase(t, m.timing))), c);
+    const p = draw(blend(m.from, m.to, phase(t, m.timing)));
     defs = p.defs; body = p.body;
   }
   return { defs, body: `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="24" fill="${c.card}"/><g transform="${g}">${body}</g>` };
@@ -380,4 +637,4 @@ function render(svg, file, scale = 1) {
   fs.writeFileSync(file, new Resvg(svg, { fitTo: { mode: 'zoom', value: scale } }).render().asPng());
 }
 
-module.exports = { load, card, render, THEMES, motion, figure, pose, lerpPose, phase, v, add, sub, mul, dir, unit, rotate };
+module.exports = { load, card, render, THEMES, motion, figure, pose, lerpPose, phase, frontFigure, frontPose, lerpFront, v, add, sub, mul, dir, unit, rotate, len, BODY };

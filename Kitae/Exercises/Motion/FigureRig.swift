@@ -262,19 +262,21 @@ nonisolated struct FigurePose: Equatable, Sendable, Decodable {
     var farShin: Double?
     /// The side the knees bend to when reaching for the ankle: -1 forward, 1 back.
     var knee: Double
+    /// A kneeling pose pinned at the knee: the hip follows from the thigh's angle.
+    var kneeAt: Vec?
     var arm: ArmPose
     /// The far arm, when it isn't doing the same as the near one.
     var farArm: ArmPose?
 
     nonisolated private enum Keys: String, CodingKey {
         case hip, lean, curl, shrug, head, ankle, foot, thigh, shin, farAnkle, farFoot, farThigh, farShin, knee
-        case arm, farArm
+        case kneeAt, arm, farArm
     }
 
     init(hip: Vec, lean: Double, curl: Double = 0, shrug: Double = 0, head: Double? = nil,
          ankle: Vec = Vec(0, -FigureBody.ankleHeight), foot: Double = 0, thigh: Double? = nil, shin: Double? = nil,
          farAnkle: Vec? = nil, farFoot: Double? = nil, farThigh: Double? = nil, farShin: Double? = nil,
-         knee: Double = -1, arm: ArmPose, farArm: ArmPose? = nil) {
+         knee: Double = -1, kneeAt: Vec? = nil, arm: ArmPose, farArm: ArmPose? = nil) {
         self.hip = hip
         self.lean = lean
         self.curl = curl
@@ -289,6 +291,7 @@ nonisolated struct FigurePose: Equatable, Sendable, Decodable {
         self.farThigh = farThigh
         self.farShin = farShin
         self.knee = knee
+        self.kneeAt = kneeAt
         self.arm = arm
         self.farArm = farArm
     }
@@ -309,6 +312,7 @@ nonisolated struct FigurePose: Equatable, Sendable, Decodable {
         farThigh = try c.decodeIfPresent(Double.self, forKey: .farThigh)
         farShin = try c.decodeIfPresent(Double.self, forKey: .farShin)
         knee = try c.decodeIfPresent(Double.self, forKey: .knee) ?? -1
+        kneeAt = try c.decodeIfPresent(Vec.self, forKey: .kneeAt)
         arm = try c.decode(ArmPose.self, forKey: .arm)
         farArm = try c.decodeIfPresent(ArmPose.self, forKey: .farArm)
     }
@@ -333,7 +337,7 @@ nonisolated struct FigurePose: Equatable, Sendable, Decodable {
             thigh: mix(a.thigh, b.thigh), shin: mix(a.shin, b.shin),
             farAnkle: mix(a.farAnkle, b.farAnkle), farFoot: mix(a.farFoot, b.farFoot),
             farThigh: mix(a.farThigh, b.farThigh), farShin: mix(a.farShin, b.farShin), knee: a.knee,
-            arm: .lerp(a.arm, b.arm, t), farArm: mix(a.farArm, b.farArm))
+            kneeAt: mix(a.kneeAt, b.kneeAt), arm: .lerp(a.arm, b.arm, t), farArm: mix(a.farArm, b.farArm))
     }
 }
 
@@ -361,14 +365,18 @@ nonisolated struct Figure {
     let nearArm: Arm
     let farArm: Arm
 
-    init(_ p: FigurePose) {
+    init(_ pose: FigurePose) {
+        var p = pose
+        if let kneeAt = p.kneeAt, let thigh = p.thigh {
+            p.hip = kneeAt - Vec.direction(thigh) * FigureBody.thigh
+        }
         let spine = Vec.direction(p.lean)
         let front = Vec(-spine.y, spine.x)
         let torso = { (along: Double, out: Double) in Figure.point(p, spine, front, along, out) }
         let headDirection = Vec.direction(p.head ?? (p.lean + p.curl))
         let headFront = Vec(-headDirection.y, headDirection.x)
 
-        pose = p
+        self.pose = p
         self.spine = spine
         self.front = front
         self.headDirection = headDirection
@@ -411,6 +419,11 @@ nonisolated struct Figure {
 
     /// A point on the body: `along` the spine from the hip, then `out` the front.
     func torso(_ along: Double, _ out: Double) -> Vec { Figure.point(pose, spine, front, along, out) }
+
+    /// The spine's direction at a point `along` it, following the curl.
+    func spine(at along: Double) -> Vec {
+        spine.rotated(by: pose.curl * .pi / 180 * FigureMath.smoothstep((along - 10) / 16))
+    }
 
     /// The direction the body faces at a point `along` the spine, as an angle like `lean`.
     func turn(at along: Double) -> Double {
