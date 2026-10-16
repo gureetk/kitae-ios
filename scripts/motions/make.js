@@ -1,0 +1,209 @@
+// Kitae for iPhone
+// SPDX-License-Identifier: GPL-3.0-or-later
+'use strict';
+// Writes ExerciseMotions.json: each exercise's start and end poses, gear and muscles.
+// Units: a figure 190 tall, floor at y = 0, y down, facing right, near ankle at x = 0.
+// Run: node make.js [OUT.json], which writes the app's copy by default.
+const fs = require('fs');
+
+const M = require('./motion');
+const r1 = x => Math.round(x * 10) / 10;
+const pt = q => [r1(q.x), r1(q.y)];
+const add = (a, b) => [r1(a[0] + b[0]), r1(a[1] + b[1])];
+const body = p => M.figure(M.pose({ arm: { upper: 0 }, ...p }));
+// A point on a pose's torso: `a` along the spine from the hip, `b` out the front.
+const on = (p, a, b) => pt(body(p).torso(a, b));
+// The near shoulder of a pose.
+const shoulder = p => pt(body(p).nearArm.shoulder);
+// A pad behind the back, from `top` down to `bottom` along the spine; or under the front.
+const backPad = (p, top, bottom, out = -12.5) => ({ kind: 'pad', from: on(p, top, out), to: on(p, bottom, out - 1) });
+const frontPad = (p, bottom, top, out = 13.5) => ({ kind: 'pad', from: on(p, bottom, out), to: on(p, top, out) });
+// A frame post straight down from a point to the floor.
+const postDown = (from, width = 4) => ({ kind: 'post', from, to: [from[0], -2], width });
+
+const stand = { hip: [-1, -99.6], lean: 1.5, head: 0 };
+// Bench and seat tops.
+const BENCH = -47, SEAT = -48;
+const lie = { hip: [0, -59.5], lean: -90, ankle: [44, -7.4] };
+const flatBench = { kind: 'pad', from: [-92, BENCH], to: [24, BENCH], legs: [-76, 8] };
+const lieShoulder = shoulder({ ...lie, arm: { upper: 0 } });
+
+const incline = { hip: [0, -58], lean: -55, head: -45, ankle: [50, -7.4] };
+const inclineShoulder = shoulder({ ...incline, arm: { upper: 0 } });
+const inclineChest = on(incline, 42, 16);
+
+const preacher = { hip: [-12, -58], lean: 22, head: 12, ankle: [40, -7.4] };
+const preacherArm = (() => {
+  const F = body({ ...preacher, arm: { upper: 48, bend: 0 } });
+  const s = F.nearArm.shoulder, e = F.nearArm.elbow, d = M.unit(M.sub(e, s)), back = M.v(-d.y, d.x);
+  return { from: pt(M.add(M.add(s, M.mul(d, 7)), M.mul(back, 7))), to: pt(M.add(M.add(e, M.mul(d, 6)), M.mul(back, 7))) };
+})();
+
+const reclined = { hip: [0, -58], lean: -45, head: -25, ankle: [52, -7.4] };
+const prone = { hip: [-24, -80], lean: 52, head: 70, ankle: [-74, -7.4] };
+const proneShoulder = shoulder({ ...prone, arm: { upper: 0 } });
+const seated = { hip: [-4, -60], lean: -3, head: 0, ankle: [38, -7.4] };
+const pulldown = { hip: [-4, -58], lean: -12, head: -10, ankle: [34, -7.4] };
+const hangLegs = { thigh: 172, shin: 205, farThigh: 166, farShin: 198 };
+const kneel = { hip: [-6, -53.1], thigh: 180, shin: 270, foot: 166 };
+
+const motions = [
+  // Biceps
+  {
+    id: 1, name: 'Curls', gear: [{ kind: 'dumbbells' }], muscles: ['biceps'],
+    timing: [0.1, 0.42, 0.52, 0.95], shift: -6,
+    from: { ...stand, arm: { upper: 3, bend: 6 } },
+    to: { ...stand, arm: { upper: 14, bend: 138 } },
+  },
+
+  // Triceps
+  {
+    id: 5, name: 'Tricep Push Down', gear: [{ kind: 'cable', from: [42, -196], handle: 'rope', stack: true }],
+    muscles: ['triceps'], timing: [0.1, 0.45, 0.55, 0.95], shift: -16,
+    from: { ...stand, hip: [-2, -99.4], lean: 8, head: 4, arm: { upper: 4, bend: 100 } },
+    to: { ...stand, hip: [-2, -99.4], lean: 8, head: 4, arm: { upper: 2, bend: 6 } },
+  },
+  {
+    id: 7, name: 'Overhead Extensions', gear: [{ kind: 'dumbbells', hang: true, one: true }], muscles: ['triceps'],
+    timing: [0.1, 0.5, 0.58, 0.95], zoom: 0.84, shift: 2,
+    from: { ...stand, arm: { upper: 172, bend: 4 } },
+    to: { ...stand, arm: { upper: 172, bend: 128 } },
+  },
+
+  // Shoulders
+  {
+    id: 9, name: 'Shoulder Press', gear: [{ kind: 'dumbbells' }], muscles: ['frontDelts', 'sideDelts', 'triceps'],
+    timing: [0.1, 0.45, 0.55, 0.95], zoom: 0.84, shift: -4,
+    from: { ...stand, arm: { upper: 62, bend: 118, upperLength: 0.45 } },
+    to: { ...stand, arm: { upper: 172, bend: 6, upperLength: 1 } },
+  },
+  {
+    id: 10, name: 'Face Pulls', gear: [{ kind: 'cable', from: [100, -152], handle: 'rope', stack: true }],
+    muscles: ['rearDelts', 'traps'], timing: [0.1, 0.45, 0.55, 0.95], shift: -34,
+    from: { ...stand, lean: -3, head: -2, arm: { hand: [58, -151], elbow: -1 } },
+    to: { ...stand, lean: -3, head: -2, arm: { hand: [15, -159], scale: 0.9, upperLength: 0.6, elbow: -1 } },
+  },
+  {
+    id: 35, name: 'Upright Rows', gear: [{ kind: 'barbell' }], muscles: ['sideDelts', 'traps'],
+    timing: [0.1, 0.45, 0.55, 0.95], shift: -4,
+    from: { ...stand, arm: { hand: [9, -85.5], elbow: -1 } },
+    to: { ...stand, arm: { hand: [12, -128], upperLength: 0.42, elbow: 1 } },
+  },
+
+  // Legs
+  {
+    id: 11, name: 'Squats', gear: [{ kind: 'barbell', on: 'back' }], muscles: ['quads', 'glutes'],
+    timing: [0.08, 0.52, 0.58, 0.94], shift: 14,
+    from: { hip: [-2, -99.6], lean: 4, head: 1.8, arm: { hand: [48.6, -13], on: 'torso', scale: 0.75, elbow: -1 } },
+    to: { hip: [-35, -56], lean: 43, head: 19.4, arm: { hand: [46.4, -11.2], on: 'torso', scale: 0.75, elbow: -1 } },
+  },
+  {
+    id: 14, name: 'Stiff Legged Deadlift', gear: [{ kind: 'barbell' }], muscles: ['hamstrings', 'glutes', 'lowerBack'],
+    timing: [0.08, 0.5, 0.58, 0.94], shift: 10,
+    from: { hip: [-1, -98.8], lean: 3, head: 1, arm: { hand: [9, -85.5], elbow: -1 } },
+    to: { hip: [-33, -94], lean: 76, head: 48, arm: { hand: [13.5, -42], elbow: -1 } },
+  },
+  {
+    id: 18, name: 'Lunges', gear: [{ kind: 'dumbbells', profile: true }], muscles: ['quads', 'glutes'],
+    timing: [0.08, 0.5, 0.58, 0.94], shift: 4,
+    from: { hip: [-4, -95], lean: 2, head: 0, ankle: [24, -7.4], farAnkle: [-31.5, -16.4], farFoot: 35, arm: { upper: 0, bend: 4 } },
+    to: { hip: [-4, -55], lean: 4, head: 0, ankle: [24, -7.4], farAnkle: [-31.5, -16.4], farFoot: 35, arm: { upper: 0, bend: 4 } },
+  },
+
+  // Biceps on benches
+  {
+    id: 3, name: 'Preacher Curls', muscles: ['biceps'], timing: [0.1, 0.45, 0.55, 0.95], shift: -8,
+    gear: [{ kind: 'pad', from: [-32, SEAT], to: [4, SEAT], legs: [-14] },
+      { kind: 'pad', ...preacherArm, thick: 9, front: true, legs: [r1((preacherArm.from[0] + preacherArm.to[0]) / 2)] },
+      { kind: 'ezbar' }],
+    from: { ...preacher, arm: { upper: 48, bend: 12 } },
+    to: { ...preacher, arm: { upper: 48, bend: 118 } },
+  },
+  {
+    id: 4, name: 'Incline Bicep Curls', muscles: ['biceps'], timing: [0.1, 0.45, 0.55, 0.95], shift: 6,
+    gear: [{ kind: 'pad', from: [-16, SEAT], to: [22, SEAT], legs: [6] }, backPad(reclined, 70, 0),
+      postDown(on(reclined, 32, -22)), { kind: 'dumbbells' }],
+    from: { ...reclined, arm: { upper: 0, bend: 4 } },
+    to: { ...reclined, arm: { upper: 0, bend: 122 } },
+  },
+
+  // Triceps and chest on a flat bench
+  {
+    id: 6, name: 'Skull-Crushers', muscles: ['triceps'], timing: [0.1, 0.5, 0.58, 0.95], shift: 14,
+    gear: [flatBench, { kind: 'ezbar' }],
+    from: { ...lie, arm: { upper: 190, bend: 0 } },
+    to: { ...lie, arm: { upper: 190, bend: 115 } },
+  },
+  {
+    id: 21, name: 'Bench Press', muscles: ['chest', 'triceps', 'frontDelts'], timing: [0.1, 0.5, 0.58, 0.95], shift: 14,
+    gear: [flatBench, { kind: 'barbell' }],
+    from: { ...lie, arm: { hand: add(lieShoulder, [3, -61]), elbow: 1 } },
+    to: { ...lie, arm: { hand: [-38, -69.5], elbow: 1 } },
+  },
+  {
+    id: 24, name: 'Chest Fly', muscles: ['chest'], timing: [0.1, 0.5, 0.58, 0.95], shift: 14,
+    gear: [flatBench, { kind: 'dumbbells', profile: true }],
+    from: { ...lie, arm: { hand: add(lieShoulder, [3, -59]), elbow: 1 } },
+    to: { ...lie, arm: { hand: add(lieShoulder, [4, 9]), scale: 0.42, elbow: 1 } },
+  },
+  {
+    id: 22, name: 'Incline Bench', muscles: ['chest', 'frontDelts', 'triceps'], timing: [0.1, 0.5, 0.58, 0.95], shift: 4,
+    gear: [{ kind: 'pad', from: [-16, SEAT], to: [22, SEAT], legs: [8] }, backPad(incline, 74, 2),
+      postDown(on(incline, 36, -22)), { kind: 'barbell' }],
+    from: { ...incline, arm: { hand: add(inclineShoulder, [2, -61]), elbow: 1 } },
+    to: { ...incline, arm: { hand: add(inclineChest, [0, 6.5]), elbow: 1 } },
+  },
+  {
+    id: 23, name: 'Pec Dec', muscles: ['chest'], timing: [0.1, 0.45, 0.55, 0.95], shift: 0,
+    gear: [{ kind: 'pad', from: [-24, -50], to: [12, -50], legs: [-6] }, backPad(seated, 66, 4),
+      { kind: 'handle' }],
+    from: { ...seated, arm: { hand: [-15, -110], scale: 0.4, elbow: 1 } },
+    to: { ...seated, arm: { hand: [40, -112], elbow: 1 } },
+  },
+
+  // Core
+  {
+    id: 20, name: 'Leg Raises', muscles: ['abs'], timing: [0.1, 0.48, 0.56, 0.95], shift: 16,
+    shadow: [-12, 0], shadowWidth: 86,
+    from: { hip: [0, -14], lean: -90, thigh: 83, shin: 83, foot: -97, arm: { upper: 90, bend: 0 } },
+    to: { hip: [0, -14], lean: -90, thigh: 0, shin: 0, foot: -180, arm: { upper: 90, bend: 0 } },
+  },
+
+  // Back
+  {
+    id: 26, name: 'Lat Pull-down', muscles: ['lats', 'biceps'], timing: [0.1, 0.45, 0.55, 0.95], zoom: 0.94, shift: 4,
+    gear: [{ kind: 'pad', from: [-26, SEAT], to: [10, SEAT], legs: [-8] }, { kind: 'roller', on: 'thigh' },
+      { kind: 'cable', from: [-6, -212], handle: 'bar' }],
+    from: { ...pulldown, arm: { hand: [-8, -165], scale: 0.9, elbow: 1 } },
+    to: { ...pulldown, arm: { hand: add(on(pulldown, 44, 17), [0, 6.5]), scale: 0.85, elbow: 1 } },
+  },
+  {
+    id: 27, name: 'Pull-ups', muscles: ['lats', 'biceps'], timing: [0.1, 0.45, 0.55, 0.95], zoom: 0.78, shift: 0,
+    gear: [{ kind: 'post', from: [-34, -2], to: [-34, -236], width: 5 }, { kind: 'post', from: [-34, -228], to: [6, -228], width: 3 },
+      { kind: 'bar', at: [6, -228] }],
+    from: { hip: [11.5, -111.8], lean: -6, head: -4, ...hangLegs, arm: { hand: [6, -221.5], scale: 0.9, elbow: 1 } },
+    to: { hip: [7, -168], lean: -12, head: -18, ...hangLegs, arm: { hand: [6, -221.5], scale: 0.9, elbow: 1 } },
+  },
+  {
+    id: 28, name: 'Lat Prayers', muscles: ['lats'], timing: [0.1, 0.48, 0.56, 0.95], shift: -18,
+    gear: [{ kind: 'cable', from: [64, -196], handle: 'rope', stack: true }],
+    from: { ...kneel, lean: 2, head: 0, arm: { upper: 162, bend: 6 } },
+    to: { ...kneel, lean: 30, curl: 18, head: 62, arm: { upper: 95, bend: 25 } },
+  },
+  {
+    id: 30, name: 'Chest-Supported Rows', muscles: ['lats', 'traps', 'rearDelts'], timing: [0.1, 0.45, 0.55, 0.95], shift: 14,
+    gear: [frontPad(prone, -4, 62), postDown(on(prone, 20, 22)), { kind: 'dumbbells', profile: true }],
+    from: { ...prone, arm: { hand: add(proneShoulder, [0, 61.5]), elbow: -1 } },
+    to: { ...prone, arm: { hand: on(prone, 22, 6), elbow: -1 } },
+  },
+  {
+    id: 29, name: 'Bent-over Rows', gear: [{ kind: 'barbell' }], muscles: ['lats', 'traps', 'rearDelts'],
+    timing: [0.08, 0.45, 0.55, 0.95], shift: 8,
+    from: { hip: [-30, -88], lean: 72, head: 40, arm: { hand: [15.5, -41], elbow: -1 } },
+    to: { hip: [-30, -88], lean: 72, head: 40, arm: { hand: [2, -86.5], elbow: -1 } },
+  },
+];
+
+const out = process.argv[2] || require('path').join(__dirname, '../../Kitae/Exercises/Motion/ExerciseMotions.json');
+fs.writeFileSync(out, JSON.stringify(motions, null, 1) + '\n');
+console.log(motions.length, 'motions');

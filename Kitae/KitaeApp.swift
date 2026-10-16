@@ -35,6 +35,8 @@ struct KitaeApp: App {
                         #if DEBUG
                         if let page = DebugLaunch.galleryPage {
                             RestActivityGallery(page: page)
+                        } else if DebugLaunch.opensMotionGallery {
+                            MotionGallery()
                         }
                         #endif
                     }

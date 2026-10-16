@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "description": "Makes Kitae's exercise animations and draws them as pictures for checking",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2"
+  }
+}

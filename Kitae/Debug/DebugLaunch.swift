@@ -12,7 +12,7 @@ import os
 /// `plansettyping`, `addexercise`, `newday` and `firstday` for the plan editor, and `editworkout` and
 /// `workoutedit` for it while a workout is going, from Today and from the workout; `history` and
 /// `workoutdetail` for History, `exercises` and `exercise` for Exercises, and `you` and `settings`
-/// for You, with five weeks of example workouts.
+/// for You, with five weeks of example workouts; `motions` for every exercise animation.
 /// These use a database in memory, so the real one isn't touched, and they don't ask for alerts.
 /// Their backups go into a temporary folder.
 enum DebugLaunch {
@@ -50,12 +50,17 @@ enum DebugLaunch {
         return screen == "today" || workoutScreens.contains(screen) || editorScreens.contains(screen)
             || newPlanScreens.contains(screen) || firstLaunchScreens.contains(screen)
             || historyScreens.contains(screen) || exerciseScreens.contains(screen) || youScreens.contains(screen)
-            || galleryPage != nil
+            || galleryPage != nil || opensMotionGallery
     }
 
     /// The rest timer's Lock Screen and Dynamic Island looks, drawn in the app.
     static var galleryPage: String? {
         ["activity", "activitystates"].contains(screen ?? "") ? screen : nil
+    }
+
+    /// Every exercise animation in a list, drawn over the app.
+    static var opensMotionGallery: Bool {
+        screen == "motions"
     }
 
     /// Whether Kitae opens on History.

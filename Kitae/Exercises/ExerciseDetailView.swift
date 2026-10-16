@@ -260,6 +260,12 @@ struct ExerciseDetailView: View {
                 .font(.kitaeDisplay(28, relativeTo: .title2))
                 .foregroundStyle(.ink)
                 .accessibilityAddTraits(.isHeader)
+            if let motion = ExerciseMotions.motion(for: exercise.id) {
+                // Lined up with the cards above, 16 points from the edges.
+                ExerciseMotionView(motion: motion)
+                    .padding(.horizontal, -8)
+                    .padding(.bottom, 4)
+            }
             if steps.isEmpty {
                 Text("No instructions yet. You can write your own with Edit.")
                     .font(.callout)
