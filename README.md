@@ -8,7 +8,7 @@ This is the iPhone version, written in SwiftUI. Kitae for Android lives at [code
 
 ## Try it
 
-Join the beta at [testflight.apple.com/join/GTKbw4Hg](https://testflight.apple.com/join/GTKbw4Hg) on an iPhone with iOS 26 or newer. The link opens Apple's TestFlight app, which installs Kitae and its updates. You can send feedback from TestFlight too.
+Join the beta at [testflight.apple.com/join/GTKbw4Hg](https://testflight.apple.com/join/GTKbw4Hg) on an iPhone with iOS 26 or newer. The link opens Apple's TestFlight app, which installs Kitae and its updates. Send feedback from TestFlight, or report bugs and ask for features in [the issues on GitHub](https://github.com/koyomi-apps/kitae-ios/issues).
 
 ## Goals
 

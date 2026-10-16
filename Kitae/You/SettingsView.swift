@@ -19,7 +19,7 @@ struct SettingsView: View {
     /// Why resetting didn't work.
     @State private var resetProblem: String?
 
-    static let sourceCode = URL(string: "https://codeberg.org/gureetk/kitae-ios")!
+    static let sourceCode = URL(string: "https://github.com/koyomi-apps/kitae-ios")!
 
     var body: some View {
         @Bindable var model = model
@@ -100,7 +100,7 @@ struct SettingsView: View {
                     }
                     .contentShape(.rect)
                 }
-                .accessibilityHint("Opens Kitae's code on Codeberg")
+                .accessibilityHint("Opens Kitae's code on GitHub")
                 .listRowBackground(Color.card)
             } header: {
                 SectionCaption(".about")
