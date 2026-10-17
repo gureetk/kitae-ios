@@ -264,6 +264,10 @@ struct ExerciseDetailView: View {
                 // Lined up with the cards above, 16 points from the edges.
                 ExerciseMotionView(motion: motion)
                     .padding(.horizontal, -8)
+            }
+            if let work = ExerciseMuscles.work(for: exercise) {
+                MuscleMapView(work: work)
+                    .padding(.horizontal, -8)
                     .padding(.bottom, 4)
             }
             if steps.isEmpty {

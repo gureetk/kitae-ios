@@ -3,11 +3,37 @@
 
 import Foundation
 
-/// Muscles the figure can show in olive.
+/// Muscles an exercise works. The animated figure can show all but the last three in olive;
+/// the muscle map shows them all.
 nonisolated enum Muscle: String, Decodable, Sendable, CaseIterable {
     case quads, hamstrings, glutes, calves
     case chest, abs, obliques, lats, traps, lowerBack
     case frontDelts, sideDelts, rearDelts, biceps, triceps, forearms
+    case upperBack, adductors, abductors
+
+    var name: String {
+        switch self {
+        case .quads: "Quads"
+        case .hamstrings: "Hamstrings"
+        case .glutes: "Glutes"
+        case .calves: "Calves"
+        case .chest: "Chest"
+        case .abs: "Abs"
+        case .obliques: "Obliques"
+        case .lats: "Lats"
+        case .traps: "Traps"
+        case .lowerBack: "Lower back"
+        case .frontDelts: "Front delts"
+        case .sideDelts: "Side delts"
+        case .rearDelts: "Rear delts"
+        case .biceps: "Biceps"
+        case .triceps: "Triceps"
+        case .forearms: "Forearms"
+        case .upperBack: "Upper back"
+        case .adductors: "Adductors"
+        case .abductors: "Abductors"
+        }
+    }
 }
 
 /// Something the figure holds or uses, or a piece of a bench or machine.

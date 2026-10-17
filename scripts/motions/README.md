@@ -37,3 +37,22 @@ side mirrors unless `otherArm` says otherwise. `turn` turns the whole figure (a 
 `lean` bends it sideways at the waist, `torsoLength`, `thighLength`, `shinLength`, `upperLength`
 and `foreLength` shorten parts that point toward the viewer, `headHeight` lowers the head for a
 bent-over body, and `legsFront` draws sitting legs over the body.
+
+## Muscle map
+
+`Kitae/Exercises/Muscles/ExerciseMuscles.json` holds the muscle map under an exercise's
+animation: a body from the front and from the back, each muscle a shape on it, and for every
+starter exercise the muscles it works most (primary) and the ones that help (secondary).
+`muscles.js` writes it; edit the shapes and the exercises' muscles there. `muscle-sheet.js` draws
+maps the way the app does, in its colours:
+
+    node muscles.js
+    node muscle-sheet.js ../../Kitae/Exercises/Muscles/ExerciseMuscles.json muscles.png light 21,47
+    node muscle-sheet.js ../../Kitae/Exercises/Muscles/ExerciseMuscles.json muscles.png dark all-muscles
+
+The picture is 100 units wide and 222 tall, facing the viewer, with y growing downward. Each
+shape is a list of points that a smooth closed curve (Catmull-Rom) passes through, written out as
+cubic Béziers, given for the right half of the picture and mirrored for the left. Muscles are
+drawn over the body's outline with a thin gap round each. People's own exercises show their
+muscle group instead (`MuscleGroup.muscles` in Swift). The muscles an animation shows in olive
+have to be among its exercise's muscles here; a test checks it.
