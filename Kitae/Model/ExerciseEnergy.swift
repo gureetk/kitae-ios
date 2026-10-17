@@ -28,14 +28,15 @@ nonisolated struct ExerciseEnergy: Equatable, Sendable {
     static let mostReps = 300
     static let mostKilograms = 600.0
 
-    /// The energy of one set, in kcal, on top of resting.
-    func kilocalories(reps: Int, weightKg: Double, bodyKg: Double) -> Double {
+    /// The energy of one set, in kcal, on top of resting. `reach` scales how far each rep moves
+    /// the weight, by the lifter's height (see `WorkoutEnergy.reach`); a hold doesn't move.
+    func kilocalories(reps: Int, weightKg: Double, bodyKg: Double, reach: Double = 1) -> Double {
         let reps = Double(min(max(reps, 0), Self.mostReps))
         if let holdMETs {
             return max(holdMETs - 1, 0) * bodyKg * reps / 3600 * sides
         }
         let load = min(max(weightKg, 0), Self.mostKilograms)
-        return perKilogram * (load * loadFactor + bodyShare * bodyKg) * reps * sides
+        return perKilogram * (load * loadFactor + bodyShare * bodyKg) * reps * sides * reach
     }
 
     // Kcal for each kilogram moved, each rep.

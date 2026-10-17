@@ -141,6 +141,30 @@ struct BodyTests {
         #expect(warmUp < plain)
     }
 
+    @Test func heightScalesHowFarEachRepMoves() {
+        let squats = ExerciseEnergy.of(exerciseID: 11, target: "Quads", isIsometric: false)
+        let average = squats.kilocalories(reps: 10, weightKg: 100, bodyKg: 80)
+        let tall = squats.kilocalories(reps: 10, weightKg: 100, bodyKg: 80, reach: WorkoutEnergy.reach(heightCm: 190))
+        #expect(abs(tall - average * 190 / 175) < 1e-9)
+        // A hold doesn't move, so height doesn't change it.
+        let plank = ExerciseEnergy.of(exerciseID: 69, target: "Core", isIsometric: true)
+        #expect(plank.kilocalories(reps: 60, weightKg: 0, bodyKg: 80, reach: 1.1) == plank.kilocalories(reps: 60, weightKg: 0, bodyKg: 80))
+        // Without a height nothing changes, and far from the usual heights the change stops.
+        #expect(WorkoutEnergy.reach(heightCm: nil) == 1 && WorkoutEnergy.reach(heightCm: 0) == 1)
+        #expect(WorkoutEnergy.reach(heightCm: 120) == 0.8 && WorkoutEnergy.reach(heightCm: 230) == 1.2)
+    }
+
+    @Test func aWorkoutUsesTheHeightOfTheProfile() throws {
+        let squats = [done(11, reps: 10, kg: 100)]
+        let weighIn = [BodyEntry(id: 1, date: 90, weightKg: 80)]
+        let short = try #require(BodyLog(profile: BodyProfile(heightCm: 160), entries: weighIn)
+            .activeKilocalories(workout(minutes: 30, sets: 1), sets: squats))
+        let unknown = try #require(BodyLog(entries: weighIn).activeKilocalories(workout(minutes: 30, sets: 1), sets: squats))
+        // The sets scale, the 3 minutes between them don't.
+        let between = 0.5 * 80 * 3 / 60
+        #expect(abs((short - between) - (unknown - between) * 160 / 175) < 1e-9)
+    }
+
     @Test func timeBetweenSetsCountsLittleAndHasALimit() {
         let sets = Array(repeating: done(21, reps: 10, kg: 60, target: "Chest"), count: 10)
         let lifting = WorkoutEnergy.active(sets: sets, durationMilliseconds: 0, bodyKg: 80)

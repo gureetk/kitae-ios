@@ -25,6 +25,9 @@ struct WorkoutDoneView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         header(summary)
                         tiles(summary)
+                        if model.activeKilocalories(summary, sets: sets) != nil {
+                            energyNote(hasHeight: model.bodyLog.profile.heightCm != nil)
+                        }
                         MuscleVolumeCard(
                             subtitle: "This workout",
                             volume: MuscleVolume(doneSets: sets),
@@ -93,6 +96,37 @@ struct WorkoutDoneView: View {
                 .accessibilityHint("Opens your weigh-ins, to count the energy your workouts use")
             }
         }
+    }
+
+    /// Under the figures, once there's an energy figure: what it's worked out from, that height
+    /// makes it closer, and that it's an estimate all the same.
+    private func energyNote(hasHeight: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(hasHeight
+                 ? "Energy is an estimate, from your sets, weight and height. Your tempo and range of motion change it too, and Kitae can't see those."
+                 : "Energy is an estimate, from your sets and weight. Your height makes it closer.")
+                .font(.footnote)
+                .foregroundStyle(.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
+            if !hasHeight {
+                NavigationLink {
+                    BodyView()
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Add your height")
+                        Image(systemName: "chevron.right")
+                            .imageScale(.small)
+                    }
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.olive)
+                    .frame(minHeight: 44)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Opens Body, for a closer energy estimate")
+            }
+        }
+        .padding(.horizontal, 8)
     }
 
     private func load() {

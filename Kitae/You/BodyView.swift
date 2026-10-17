@@ -65,7 +65,7 @@ struct BodyView: View {
             } header: {
                 SectionCaption(".about you")
             } footer: {
-                Text("All optional, and kept on this iPhone and in Kitae's backups. Your weight lets Kitae work out the energy your workouts use, from the sets you do.")
+                Text("All optional, and kept on this iPhone and in Kitae's backups. Kitae estimates the energy your workouts use from the sets you do and your weight, and your height makes it closer. Sex, age and body fat mainly change the energy you use at rest, which isn't part of it, so they're left out. Either way, it's an estimate.")
                     .foregroundStyle(.inkSoft)
             }
         }
