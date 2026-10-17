@@ -6,6 +6,13 @@ This is the iPhone version, written in SwiftUI. Kitae for Android lives at [code
 
 **Status:** beta, on TestFlight.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/readme-dark.png">
+  <img src="docs/screenshots/readme-light.png" alt="Four of Kitae's screens: today's training day and its exercises, a workout with its sets ticked off and the rest timer running, Deadlift's page with an animated figure above the steps, and the You page with a grid of the days trained">
+</picture>
+
+More screenshots, in light and dark mode, are in [docs/screenshots](docs/screenshots).
+
 ## Try it
 
 Join the beta at [testflight.apple.com/join/GTKbw4Hg](https://testflight.apple.com/join/GTKbw4Hg) on an iPhone with iOS 26 or newer. The link opens Apple's TestFlight app, which installs Kitae and its updates. Send feedback from TestFlight, or report bugs and ask for features in [the issues on GitHub](https://github.com/koyomi-apps/kitae-ios/issues).

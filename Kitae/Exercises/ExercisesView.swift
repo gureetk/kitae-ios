@@ -106,13 +106,15 @@ struct ExercisesView: View {
         self.madeExercise = nil
     }
 
-    /// `-KitaeScreen exercise`: opens Incline Bench's page.
+    /// `-KitaeScreen exercise`: opens Incline Bench's page. `howto` opens Deadlift's, which has no workouts,
+    /// so How to do it and its animation come first.
     private func openDebugScreen() async {
         #if DEBUG
-        guard DebugLaunch.screen == "exercise", DebugLaunch.consume("exercise"),
-              let bench = exercises.first(where: { $0.name == "Incline Bench" }) else { return }
+        guard let screen = DebugLaunch.screen, ["exercise", "howto"].contains(screen), DebugLaunch.consume(screen),
+              let exercise = exercises.first(where: { $0.name == (screen == "howto" ? "Deadlift" : "Incline Bench") })
+        else { return }
         try? await Task.sleep(for: .milliseconds(500))
-        path = [.exercise(bench.id)]
+        path = [.exercise(exercise.id)]
         #endif
     }
 }
