@@ -2,6 +2,15 @@
 
 What's new in each build of Kitae for iPhone. Builds go to [TestFlight](https://testflight.apple.com/join/GTKbw4Hg), and from 1.0 (2) each one is also on [GitHub's Releases page](https://github.com/koyomi-apps/kitae-ios/releases) as an IPA for sideloading.
 
+## 1.0 (3) · 2026-10-17
+
+- **The muscles each exercise works.** On an exercise's page, a body from the front and the back shows the muscles it works most in olive and the ones that help in a lighter shade, with their names. Your own exercises show their muscle group. Asked for in issue #5.
+- **Body.** A new page in You for your weight and body fat, with a chart and your lean and fat mass, plus your height, date of birth, sex and activity level. All of it is optional, and it stays on your iPhone and in Kitae's backups. Asked for in issue #7.
+- **The energy your workouts use.** Once you've added your weight, Kitae estimates it from the sets you did: each exercise, its reps and weight, and its set type, with sets to failure, drop sets and rest-pause sets counting more. Your height makes it closer. You'll see it on Today after a workout, in History and on a workout's page, and You adds up the week. It's still an estimate: Kitae can't see your tempo or range of motion.
+- **A summary after each workout,** with how long it took, your sets, the energy it used and the muscles it worked. You can turn it off in Settings › Workouts.
+- **This week on You:** your workouts, time and energy so far, and a map of the muscles you've worked in the last 7 days, the most worked in olive.
+- An exercise's heaviest set also shows against your body weight, like "1.25 × body weight".
+
 ## 1.0 (2) · 2026-10-16
 
 - **How to do it, shown.** Every starter exercise's page now has a figure doing the movement above its steps, with the muscles it works in olive. Movements out to the sides, like lateral raises, are shown from the front. With Reduce Motion on, it shows the start and the end of the movement together.
