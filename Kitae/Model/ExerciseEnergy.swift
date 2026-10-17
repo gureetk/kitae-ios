@@ -148,15 +148,21 @@ nonisolated struct ExerciseEnergy: Equatable, Sendable {
 }
 
 nonisolated extension SetType {
-    /// How much more a set of this type takes than its logged reps show: Kitae's own weights for
-    /// set types (Kitae for Android's `set_type` table), for the reps after a drop, the extra
-    /// mini-sets of rest-pause, and going to failure. A warm-up counts for its own light weight.
+    /// How much more a set of this type costs than its logged reps and weight show.
+    ///
+    /// Sets taken to failure cost more for the same work, as extra anaerobic and recovery
+    /// energy (Scott & Earnest 2011): single bench press sets to failure measured about 43 and
+    /// 60 kJ (Scott et al. 2011) where the same lab's sets stopped short of failure come to
+    /// about 26 and 45 kJ for the same work (Scott et al. 2014), a third to two thirds more.
+    /// Kitae counts 30%, at the low end, as sets logged as standard are often close to failure
+    /// too. Drop and rest-pause sets go to failure as well, and their drops and mini-sets are
+    /// logged as sets of their own, so they count the same: with the same weight lifted, drop
+    /// sets cost no more than straight sets (Enes et al. 2024). A warm-up counts for its own,
+    /// lighter weight.
     var energyFactor: Double {
         switch self {
         case .warmup, .standard: 1
-        case .failure: 1.15
-        case .restPause: 1.2
-        case .drop: 1.35
+        case .failure, .drop, .restPause: 1.3
         }
     }
 }

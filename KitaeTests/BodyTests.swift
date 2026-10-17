@@ -134,8 +134,8 @@ struct BodyTests {
         let between = 0.5 * 80 * 2.5 / 60
         let plain = WorkoutEnergy.active(sets: [done(11, reps: 10, kg: 100)], durationMilliseconds: nil, bodyKg: 80)
         let failure = WorkoutEnergy.active(sets: [done(11, reps: 10, kg: 100, .failure)], durationMilliseconds: nil, bodyKg: 80)
-        #expect(abs((failure - between) - 1.15 * (plain - between)) < 1e-9)
-        #expect(SetType.drop.energyFactor == 1.35 && SetType.restPause.energyFactor == 1.2)
+        #expect(abs((failure - between) - 1.3 * (plain - between)) < 1e-9)
+        #expect(SetType.drop.energyFactor == 1.3 && SetType.restPause.energyFactor == 1.3)
         // A warm-up counts for its own, lighter weight.
         let warmUp = WorkoutEnergy.active(sets: [done(11, reps: 10, kg: 40, .warmup)], durationMilliseconds: nil, bodyKg: 80)
         #expect(warmUp < plain)
