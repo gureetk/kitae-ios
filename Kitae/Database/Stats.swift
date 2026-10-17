@@ -99,3 +99,27 @@ nonisolated enum Stats {
         return weeks
     }
 }
+
+/// An exercise and how many sets of it were done.
+nonisolated struct ExerciseSetCount: Hashable, Sendable {
+    var exercise: Exercise
+    var sets: Int
+}
+
+nonisolated extension Stats {
+    /// Each exercise done from `first` to `last`, with its done sets, warm-ups left out. Sets
+    /// done in the workout in progress count straight away.
+    static func exerciseSets(_ db: Database, from first: Int, to last: Int) throws -> [ExerciseSetCount] {
+        try Row.fetchAll(db, sql: """
+            SELECT `exercises`.*, COUNT(*) AS `doneSets`
+            FROM `sets`
+            JOIN `sessions` ON `sessions`.`id` = `sets`.`sessionId`
+            JOIN `exercises` ON `exercises`.`id` = `sets`.`exerciseId`
+            WHERE `sets`.`isCompleted` = 1
+            AND `sets`.`type` != ?
+            AND `sessions`.`date` BETWEEN ? AND ?
+            GROUP BY `exercises`.`id`
+            """, arguments: [SetType.warmup.rawValue, first, last])
+            .map { ExerciseSetCount(exercise: Exercise(row: $0), sets: $0["doneSets"]) }
+    }
+}

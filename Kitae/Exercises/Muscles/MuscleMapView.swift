@@ -63,8 +63,9 @@ struct MuscleMapView: View {
     }
 }
 
-/// One side of the body, its muscles shaded by how much the exercise works them.
-private struct MuscleFigure: View {
+/// One side of the body, its muscles shaded: `work`'s primary ones in olive and its secondary
+/// ones lighter. Exercise pages and the You tab draw it.
+struct MuscleFigure: View {
     let map: MuscleMap
     let side: MuscleMap.Side
     let work: MuscleWork

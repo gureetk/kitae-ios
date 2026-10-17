@@ -66,6 +66,45 @@ struct ExerciseMusclesTests {
         #expect(MuscleWork.list([.glutes, .hamstrings, .lowerBack]) == "Glutes, hamstrings, lower back")
     }
 
+    @Test func aSetCountsOnceForPrimaryMusclesAndHalfForSecondary() {
+        let bench = Exercise(id: 21, name: "Bench Press", target: "Chest")
+        let curls = Exercise(id: 1, name: "Curls", target: "Biceps")
+        let volume = MuscleVolume([ExerciseSetCount(exercise: bench, sets: 6), ExerciseSetCount(exercise: curls, sets: 2)])
+        #expect(volume.totalSets == 8)
+        #expect(volume.sets[.chest] == 6 && volume.sets[.frontDelts] == 3 && volume.sets[.triceps] == 3)
+        #expect(volume.sets[.biceps] == 2 && volume.sets[.forearms] == 1)
+        // Half the top muscle's sets or more is "most".
+        #expect(volume.shading == MuscleWork(primary: [.chest, .frontDelts, .triceps], secondary: [.biceps, .forearms]))
+        #expect(MuscleVolume().shading == MuscleWork(primary: [], secondary: []))
+    }
+
+    @Test func aWeeksSetsLeaveOutWarmUpsUndoneSetsAndOtherDays() throws {
+        let today = 20_736
+        let database = try KitaeDatabase.followingStarterPlan(today: today)
+        let day = try #require(try database.read { db in try Plans.currentID(db).flatMap { try Plans.plan(db, id: $0) } }?.days.first)
+        let done = try database.write { db -> Int in
+            // Long ago.
+            let old = try Sessions.start(db, dayID: day.id, today: today - 10, now: Int64(today - 10) * 86_400_000)
+            for set in try Sessions.exercises(db, sessionID: old, dayID: day.id).flatMap(\.sets) {
+                try Sessions.setDone(db, setID: set.id, isDone: true)
+            }
+            try Sessions.finish(db, sessionID: old, mode: .keepSkipped, addNewSets: false, now: Int64(today - 10) * 86_400_000 + 3_600_000)
+            // Two days ago: the first exercise's sets, one of them a warm-up.
+            let recent = try Sessions.start(db, dayID: day.id, today: today - 2, now: Int64(today - 2) * 86_400_000)
+            let first = try #require(try Sessions.exercises(db, sessionID: recent, dayID: day.id).first)
+            for set in first.sets {
+                try Sessions.setDone(db, setID: set.id, isDone: true)
+            }
+            var warmUp = try #require(first.sets.first)
+            warmUp.type = .warmup
+            try Sessions.update(db, set: warmUp)
+            return first.sets.count - 1
+        }
+        let counts = try database.read { db in try Stats.exerciseSets(db, from: today - 6, to: today) }
+        #expect(counts.count == 1)
+        #expect(counts.first?.sets == done)
+    }
+
     @MainActor @Test func theMapDrawsItsMuscles() throws {
         let view = MuscleMapView(work: MuscleWork(primary: [.chest], secondary: [.triceps]))
             .frame(width: 370)

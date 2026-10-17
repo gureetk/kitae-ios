@@ -5,13 +5,16 @@ import Charts
 import SwiftUI
 
 /// The fourth tab: the plan being followed, a few totals, this week's workouts and the energy
-/// they used, the body, the last 16 weeks of training, and Settings.
+/// they used, the muscles worked in the last 7 days, the body, the last 16 weeks of training,
+/// and Settings.
 struct YouView: View {
     @Environment(AppModel.self) private var model
     @State private var totals = TrainingTotals()
     @State private var weeks: ActivityWeeks?
     /// This week's finished workouts.
     @State private var thisWeek: [WorkoutSummary] = []
+    /// The sets of the last 7 days, by muscle.
+    @State private var muscles = MuscleVolume()
     @State private var showsBody = false
     @State private var line = YouLines.random()
     /// The current plan, being edited over You.
@@ -31,6 +34,7 @@ struct YouView: View {
                     WeekTile(totals: model.bodyLog.totals(thisWeek)) {
                         showsBody = true
                     }
+                    MusclesCard(volume: muscles, formatter: model.weightFormatter)
                     Button {
                         showsBody = true
                     } label: {
@@ -119,12 +123,14 @@ struct YouView: View {
                 (
                     try Stats.totals(db),
                     try Stats.activity(db, today: today, firstWeekday: firstWeekday),
-                    try Sessions.finished(db, from: startOfWeek(today, firstWeekday: firstWeekday), to: today)
+                    try Sessions.finished(db, from: startOfWeek(today, firstWeekday: firstWeekday), to: today),
+                    try Stats.exerciseSets(db, from: today - 6, to: today)
                 )
             }
             totals = loaded.0
             weeks = loaded.1
             thisWeek = loaded.2
+            muscles = MuscleVolume(loaded.3)
         } catch {
             model.problem = "Couldn't count your workouts. \(error.localizedDescription)"
         }
@@ -263,6 +269,102 @@ private struct WeekTile: View {
     private var detail: String {
         guard totals.workouts > 0 else { return "No workouts yet" }
         return "\(counted(totals.workouts, "workout", "workouts")) · \(durationLabel(minutes: totals.minutes))"
+    }
+}
+
+/// The muscles worked in the last 7 days on the muscle map: the ones with the most sets in
+/// olive, the others worked in a lighter olive, each with its sets.
+private struct MusclesCard: View {
+    let volume: MuscleVolume
+    let formatter: WeightFormatter
+
+    var body: some View {
+        let shading = volume.shading
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Muscles")
+                    .font(.kitaeDisplay(24, relativeTo: .title3))
+                    .foregroundStyle(.ink)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 8)
+                Text("Last 7 days")
+                    .font(.footnote)
+                    .foregroundStyle(.inkSoft)
+            }
+            HStack(alignment: .center, spacing: 14) {
+                if let map = ExerciseMuscles.map {
+                    HStack(spacing: 4) {
+                        MuscleFigure(map: map, side: .front, work: shading)
+                        MuscleFigure(map: map, side: .back, work: shading)
+                    }
+                    .frame(height: 172)
+                }
+                VStack(alignment: .leading, spacing: 14) {
+                    if volume.totalSets == 0 {
+                        Text("No sets in the last 7 days. Tick some off and the muscles they work fill in.")
+                            .font(.callout)
+                            .foregroundStyle(.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        group(".most sets", shading.primary, color: .olive)
+                        group(".fewer sets", shading.secondary, color: .muscleMapSecondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if volume.totalSets > 0 {
+                Text("\(counted(volume.totalSets, "set", "sets")). A set counts once for the muscles an exercise works most, and half for the ones that help.")
+                    .font(.footnote)
+                    .foregroundStyle(.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.card, in: .rect(cornerRadius: 24))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken)
+    }
+
+    @ViewBuilder
+    private func group(_ caption: String, _ muscles: [Muscle], color: Color) -> some View {
+        if !muscles.isEmpty {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(color)
+                        .frame(width: 10, height: 10)
+                    Text(caption)
+                        .font(.kitaeMono(11, relativeTo: .caption2))
+                        .foregroundStyle(.inkSoft)
+                }
+                Text(list(muscles))
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    /// "Chest 12, triceps 9, front delts 7.5".
+    private func list(_ muscles: [Muscle]) -> String {
+        muscles.enumerated()
+            .map { index, muscle in
+                let name = index == 0 ? muscle.name : muscle.name.lowercased()
+                return "\(name) \(formatter.tenthsOrWhole(volume.sets[muscle] ?? 0))"
+            }
+            .joined(separator: ", ")
+    }
+
+    private var spoken: String {
+        guard volume.totalSets > 0 else { return "Muscles: no sets in the last 7 days" }
+        let shading = volume.shading
+        var parts = ["Muscles worked in the last 7 days, in sets. Most: \(list(shading.primary))"]
+        if !shading.secondary.isEmpty {
+            parts.append("Fewer: \(list(shading.secondary))")
+        }
+        return parts.joined(separator: ". ")
     }
 }
 
