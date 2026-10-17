@@ -79,7 +79,7 @@ struct WorkoutDetailView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
             Caption(HistoryDates.long(summary.date, today: today))
-            Caption(summary.isSkipped ? ".skipped" : workoutDetails(summary))
+            Caption(summary.isSkipped ? ".skipped" : workoutDetails(summary, kilocalories: model.activeKilocalories(summary)))
         }
     }
 

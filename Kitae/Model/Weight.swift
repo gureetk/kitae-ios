@@ -121,6 +121,42 @@ nonisolated struct WeightFormatter: Sendable {
         return isIsometric ? amount : counted(reps, "rep", "reps")
     }
 
+    /// A body weight to a tenth, like "78.4 kg".
+    func body(kilograms kg: Double) -> String {
+        "\(bodyNumber(kilograms: kg)) \(unit.symbol)"
+    }
+
+    /// A body weight's number to a tenth, like 78.4, for typing it again.
+    func bodyNumber(kilograms kg: Double) -> String {
+        tenths(unit.fromKilograms(kg))
+    }
+
+    /// A percentage to a tenth, like "18.5%", or "18%" when it's whole.
+    func percent(_ value: Double) -> String {
+        let tenths = Int((max(value, 0) * 10).rounded())
+        if tenths % 10 == 0 { return "\(tenths / 10)%" }
+        return "\(tenths / 10)\(decimals.separator(for: locale))\(tenths % 10)%"
+    }
+
+    /// A number to a tenth, like 18.5, or 18 when it's whole, for typing it again.
+    func tenthsOrWhole(_ value: Double) -> String {
+        let tenths = Int((max(value, 0) * 10).rounded())
+        if tenths % 10 == 0 { return "\(tenths / 10)" }
+        return "\(tenths / 10)\(decimals.separator(for: locale))\(tenths % 10)"
+    }
+
+    private func tenths(_ value: Double) -> String {
+        let tenths = Int((max(value, 0) * 10).rounded())
+        return "\(tenths / 10)\(decimals.separator(for: locale))\(tenths % 10)"
+    }
+
+    /// Reads a typed number, with a point or a comma.
+    static func number(from text: String) -> Double? {
+        let cleaned = text.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: ".")
+        guard !cleaned.isEmpty, let value = Double(cleaned), value.isFinite, value >= 0 else { return nil }
+        return value
+    }
+
     /// A −/+ step above the keyboard, like −2.5 or +5, with the decimal separator from Settings.
     func step(_ value: Double) -> String {
         let sign = value < 0 ? "−" : "+"

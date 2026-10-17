@@ -12,8 +12,9 @@ import os
 /// `plansettyping`, `addexercise`, `newday` and `firstday` for the plan editor, and `editworkout` and
 /// `workoutedit` for it while a workout is going, from Today and from the workout; `history` and
 /// `workoutdetail` for History, `exercises`, `exercise` and `howto` (Deadlift's page, which has no
-/// workouts) for Exercises, and `you` and `settings` for You, with five weeks of example workouts;
-/// `motions` for every exercise animation.
+/// workouts) for Exercises, and `you`, `settings` and `body` for You, with five weeks of example
+/// workouts and weigh-ins; `donetoday` for Today after a workout; `motions` for every exercise
+/// animation.
 /// These use a database in memory, so the real one isn't touched, and they don't ask for alerts.
 /// Their backups go into a temporary folder.
 enum DebugLaunch {
@@ -24,7 +25,7 @@ enum DebugLaunch {
     ]
     private static let historyScreens: Set = ["history", "workoutdetail"]
     private static let exerciseScreens: Set = ["exercises", "exercise", "howto"]
-    private static let youScreens: Set = ["you", "settings"]
+    private static let youScreens: Set = ["you", "settings", "body"]
     private static let editorScreens: Set = [
         "planedit", "planset", "plansettyping", "addexercise", "newday", "editworkout",
     ]
@@ -48,7 +49,7 @@ enum DebugLaunch {
     /// Whether this launch is for a screenshot.
     static var usesExampleData: Bool {
         guard let screen else { return false }
-        return screen == "today" || workoutScreens.contains(screen) || editorScreens.contains(screen)
+        return screen == "today" || screen == "donetoday" || workoutScreens.contains(screen) || editorScreens.contains(screen)
             || newPlanScreens.contains(screen) || firstLaunchScreens.contains(screen)
             || historyScreens.contains(screen) || exerciseScreens.contains(screen) || youScreens.contains(screen)
             || galleryPage != nil || opensMotionGallery
@@ -100,8 +101,10 @@ enum DebugLaunch {
         if !firstLaunchScreens.contains(screen), let plan = model.plans.first {
             model.selectPlan(plan.id)
         }
-        if historyScreens.contains(screen) || exerciseScreens.contains(screen) || youScreens.contains(screen) {
-            addExampleHistory(to: model)
+        if historyScreens.contains(screen) || exerciseScreens.contains(screen) || youScreens.contains(screen)
+            || screen == "donetoday" {
+            addExampleBody(to: model)
+            addExampleHistory(to: model, finishedToday: screen == "donetoday")
         }
         guard workoutScreens.contains(screen), let day = model.selectedDay else { return }
         model.startWorkout(day, at: Date.now.addingTimeInterval(-(23 * 60 + 36)))
@@ -115,18 +118,45 @@ enum DebugLaunch {
         model.isWorkoutPresented = false
     }
 
+    /// Weigh-ins every few days for five weeks, going down a little, with body fat about once a
+    /// week, and a profile.
+    private static func addExampleBody(to model: AppModel) {
+        let today = EpochDay.of(.now)
+        let weighIns: [(ago: Int, kg: Double, fat: Double?)] = [
+            (37, 80.6, 19.9), (34, 80.3, nil), (31, 80.4, nil), (29, 79.9, 19.6), (26, 79.8, nil), (23, 79.6, nil),
+            (21, 79.4, 19.2), (18, 79.5, nil), (15, 79.1, nil), (13, 78.9, 18.9), (10, 79.0, nil), (7, 78.7, nil),
+            (5, 78.6, 18.6), (2, 78.5, nil), (0, 78.4, 18.5),
+        ]
+        do {
+            try model.database.write { db in
+                for weighIn in weighIns {
+                    try BodyStore.save(db, date: today - weighIn.ago, weightKg: weighIn.kg, bodyFatPercent: weighIn.fat)
+                }
+                // 14 May 1996.
+                try BodyStore.save(db, profile: BodyProfile(heightCm: 178, birthDate: 9630, sex: .male, activityLevel: .moderatelyActive))
+            }
+        } catch {
+            note("Couldn't add the example weigh-ins: \(error)")
+        }
+    }
+
     /// Five weeks of finished workouts of the plan's days in turn, every other day or so, with
-    /// the weights going up a little each time and one workout skipped.
-    private static func addExampleHistory(to model: AppModel) {
+    /// the weights going up a little each time and one workout skipped, and with `finishedToday`
+    /// one more this afternoon.
+    private static func addExampleHistory(to model: AppModel, finishedToday: Bool = false) {
         guard let days = model.currentPlan?.days, !days.isEmpty else { return }
         let today = EpochDay.of(.now)
-        let daysAgo = [36, 34, 33, 31, 29, 27, 26, 24, 22, 20, 19, 17, 15, 13, 12, 10, 8, 6, 5, 3, 1]
+        let daysAgo = [36, 34, 33, 31, 29, 27, 26, 24, 22, 20, 19, 17, 15, 13, 12, 10, 8, 6, 5, 3, 1] + (finishedToday ? [0] : [])
         do {
             try model.database.write { db in
                 for (index, ago) in daysAgo.enumerated() {
                     let day = days[index % days.count]
                     let date = today - ago
-                    let start = EpochDay.date(date).addingTimeInterval(TimeInterval(17 * 3600 + (index % 4) * 1500))
+                    let minutes = 41 + (index * 7) % 24
+                    // Today's ends a few minutes ago.
+                    let start = ago == 0
+                        ? Date.now.addingTimeInterval(-TimeInterval((minutes + 4) * 60))
+                        : EpochDay.date(date).addingTimeInterval(TimeInterval(17 * 3600 + (index % 4) * 1500))
                     let sessionID = try Sessions.start(db, dayID: day.id, today: date, now: start.epochMilliseconds)
                     if ago != 8 {
                         let sets = try Sessions.exercises(db, sessionID: sessionID, dayID: day.id).flatMap(\.sets)
@@ -136,7 +166,6 @@ enum DebugLaunch {
                             try Sessions.setDone(db, setID: set.id, isDone: true)
                         }
                     }
-                    let minutes = 41 + (index * 7) % 24
                     let end = start.addingTimeInterval(TimeInterval(minutes * 60))
                     try Sessions.finish(db, sessionID: sessionID, mode: .keepSkipped, addNewSets: false, now: end.epochMilliseconds)
                 }

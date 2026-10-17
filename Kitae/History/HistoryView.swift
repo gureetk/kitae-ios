@@ -133,7 +133,7 @@ struct HistoryView: View {
                 .font(.kitaeMono(12, relativeTo: .caption))
                 .foregroundStyle(.inkSoft)
         } else {
-            Text(workoutDetails(workout))
+            Text(workoutDetails(workout, kilocalories: model.activeKilocalories(workout)))
                 .font(.footnote)
                 .foregroundStyle(.inkSoft)
         }

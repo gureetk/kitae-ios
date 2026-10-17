@@ -52,11 +52,17 @@ nonisolated func durationLabel(minutes: Int) -> String {
     minutes < 60 ? "\(minutes) min" : "\(minutes / 60) h \(minutes % 60) min"
 }
 
-/// "48 min · 15/15 sets", or just the sets when the workout's length isn't known.
-nonisolated func workoutDetails(_ workout: WorkoutSummary) -> String {
-    let sets = "\(workout.doneCount)/\(workout.setCount) sets"
-    guard let minutes = workout.minutes else { return sets }
-    return "\(durationLabel(minutes: minutes)) · \(sets)"
+/// "48 min · 15/15 sets", or just the sets when the workout's length isn't known, and its
+/// active energy when Kitae can work it out: "48 min · 15/15 sets · ≈ 230 kcal".
+nonisolated func workoutDetails(_ workout: WorkoutSummary, kilocalories: Double? = nil) -> String {
+    var parts = ["\(workout.doneCount)/\(workout.setCount) sets"]
+    if let minutes = workout.minutes {
+        parts.insert(durationLabel(minutes: minutes), at: 0)
+    }
+    if let kilocalories {
+        parts.append(kilocaloriesLabel(kilocalories))
+    }
+    return parts.joined(separator: " · ")
 }
 
 /// One month of History, newest first.
@@ -183,6 +189,26 @@ nonisolated extension Sessions {
             """)
             .map(WorkoutSummary.init(row:))
             .filter { $0.doneCount > 0 || ($0.isFinished && $0.setCount > 0) || $0.id == activeID }
+    }
+
+    /// Finished workouts with a set done, from `first` to `last`, newest first.
+    static func finished(_ db: Database, from first: Int, to last: Int) throws -> [WorkoutSummary] {
+        try Row.fetchAll(db, sql: """
+            SELECT `sessions`.*, `routines`.`name` AS `routineName`,
+            (SELECT COUNT(*)
+            FROM `sets`
+            WHERE `sets`.`sessionId` = `sessions`.`id`) AS `setCount`,
+            (SELECT COUNT(*)
+            FROM `sets`
+            WHERE `sets`.`sessionId` = `sessions`.`id`
+            AND `sets`.`isCompleted` = 1) AS `doneCount`
+            FROM `sessions`
+            LEFT JOIN `routines` ON `routines`.`id` = `sessions`.`routineId`
+            WHERE `sessions`.`isFinished` = 1 AND `sessions`.`date` BETWEEN ? AND ?
+            ORDER BY `sessions`.`date` DESC, `sessions`.`id` DESC
+            """, arguments: [first, last])
+            .map(WorkoutSummary.init(row:))
+            .filter { $0.doneCount > 0 }
     }
 
     static func summary(_ db: Database, id: Int64) throws -> WorkoutSummary? {

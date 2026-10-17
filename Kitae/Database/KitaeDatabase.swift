@@ -25,7 +25,8 @@ nonisolated enum KitaeDatabaseError: Error, LocalizedError {
 }
 
 /// Where Kitae keeps plans, workouts and exercises: one SQLite file, laid out exactly like
-/// Kitae for Android's (see `Schema`).
+/// Kitae for Android's (see `Schema`), plus Kitae's own tables for the body (see `BodyTables`),
+/// which Kitae for Android leaves alone.
 nonisolated final class KitaeDatabase: Sendable {
     let writer: any DatabaseWriter
 
@@ -90,16 +91,19 @@ nonisolated final class KitaeDatabase: Sendable {
             try db.execute(sql: "VACUUM")
         }
         try source.backup(to: writer)
+        // A backup from Kitae for Android, or from before the body tables, doesn't have them.
+        try writer.write { db in try BodyTables.create(db) }
     }
 
     /// Makes the tables in a new database and adds the starter exercises and plan. No plan is
     /// followed until people pick one, as in Kitae for Android. An existing database has to be
-    /// version 8.
+    /// version 8. Either way, Kitae's own tables are made if they aren't there.
     private static func prepare(_ db: Database) throws {
         let version = try Int.fetchOne(db, sql: "PRAGMA user_version") ?? 0
         if version == Schema.version {
             let hash = try String.fetchOne(db, sql: "SELECT identity_hash FROM room_master_table WHERE id = 42")
             guard hash == Schema.identityHash else { throw KitaeDatabaseError.notKitae }
+            try BodyTables.create(db)
             return
         }
         guard version == 0 else { throw KitaeDatabaseError.unsupportedVersion(version) }
@@ -107,6 +111,7 @@ nonisolated final class KitaeDatabase: Sendable {
         guard tables == 0 else { throw KitaeDatabaseError.notKitae }
 
         try Schema.create(db)
+        try BodyTables.create(db)
         try Seed.bundled().insert(db)
     }
 }

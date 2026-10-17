@@ -194,13 +194,23 @@ struct MenuRow<Value: Hashable>: View {
     let name: (Value) -> String
     var spokenName: ((Value) -> String)?
     var font: Font = .body
+    /// A second line for a choice in the menu.
+    var detail: ((Value) -> String?)?
 
     var body: some View {
         LabeledContent(title) {
             Menu {
                 Picker(title, selection: $selection) {
                     ForEach(choices, id: \.self) { choice in
-                        Text(name(choice)).tag(choice)
+                        if let detail = detail?(choice) {
+                            VStack {
+                                Text(name(choice))
+                                Text(detail)
+                            }
+                            .tag(choice)
+                        } else {
+                            Text(name(choice)).tag(choice)
+                        }
                     }
                 }
             } label: {

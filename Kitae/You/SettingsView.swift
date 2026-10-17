@@ -77,7 +77,7 @@ struct SettingsView: View {
             } header: {
                 SectionCaption(".reset")
             } footer: {
-                Text("Deletes all plans, workouts, exercises and settings, like a fresh install. Backups are kept.")
+                Text("Deletes all plans, workouts, exercises, weigh-ins and settings, like a fresh install. Backups are kept.")
                     .foregroundStyle(.inkSoft)
             }
 
@@ -121,7 +121,7 @@ struct SettingsView: View {
                 }
             }
         } message: {
-            Text("This permanently deletes all your plans, workouts, exercises and settings, and Kitae starts again with its starter plan and exercises. Backups in your backup folder are kept.")
+            Text("This permanently deletes all your plans, workouts, exercises, weigh-ins and settings, and Kitae starts again with its starter plan and exercises. Backups in your backup folder are kept.")
         }
         .alert(
             "Couldn't reset Kitae",

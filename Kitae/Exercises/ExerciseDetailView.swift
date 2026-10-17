@@ -219,7 +219,11 @@ struct ExerciseDetailView: View {
             switch page.progress.measure {
             case .weight:
                 if let heaviest = records.heaviest {
-                    tile("Heaviest set", formatter.weightFirst(reps: heaviest.reps, kilograms: heaviest.weightKg, isIsometric: isIsometric))
+                    tile(
+                        "Heaviest set",
+                        formatter.weightFirst(reps: heaviest.reps, kilograms: heaviest.weightKg, isIsometric: isIsometric),
+                        note: bodyWeightNote(heaviest.weightKg, on: records.heaviestDate)
+                    )
                 }
                 if let most = records.mostReps {
                     tile(isIsometric ? "Longest hold" : "Most reps", formatter.summary(reps: most.reps, kilograms: most.weightKg, isIsometric: isIsometric))
@@ -234,7 +238,7 @@ struct ExerciseDetailView: View {
         .padding(.horizontal, 16)
     }
 
-    private func tile(_ title: String, _ value: String) -> some View {
+    private func tile(_ title: String, _ value: String, note: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.footnote)
@@ -244,11 +248,25 @@ struct ExerciseDetailView: View {
                 .foregroundStyle(.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+            if let note {
+                Text(note)
+                    .font(.footnote)
+                    .foregroundStyle(.olive)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         .padding(.horizontal, 16)
         .background(.card, in: .rect(cornerRadius: 22))
         .accessibilityElement(children: .combine)
+    }
+
+    /// "1.25 × body weight": a weight against the body weight of the day it was lifted, once
+    /// people have weighed in.
+    private func bodyWeightNote(_ kilograms: Double, on day: Int?) -> String? {
+        guard kilograms > 0, let day, let body = model.bodyLog.weightKg(on: day), body > 0 else { return nil }
+        return "\(model.weightFormatter.number(kilograms / body)) × body weight"
     }
 
     // MARK: How to do it
@@ -383,28 +401,33 @@ struct ExerciseDetailView: View {
     }
 }
 
-/// The line of an exercise's progress, with the area under it and a dot for each workout.
-private struct ProgressChart: View {
+/// The line of an exercise's progress, with the area under it and a dot for each workout. The
+/// Body page draws weigh-ins with it too, placed by their days.
+struct ProgressChart: View {
     /// Oldest first, in the unit people see.
     let values: [Double]
     /// The smallest step between the axis's lines, 1 for reps and seconds.
     let minimumStep: Double
+    /// Where each value sits along the line, like its day. Evenly spaced without them.
+    var positions: [Double]?
     let label: (Double) -> String
 
     var body: some View {
         let scale = ChartScale(values: values, minimumStep: minimumStep)
+        let xs = positions ?? values.indices.map(Double.init)
+        let start = xs.first ?? 0
         Chart {
             ForEach(Array(values.enumerated()), id: \.offset) { index, value in
                 AreaMark(
-                    x: .value("Workout", index),
+                    x: .value("Workout", xs[index]),
                     yStart: .value("Bottom", scale.lower),
                     yEnd: .value("Value", value)
                 )
                 .foregroundStyle(Color.olive.opacity(0.12))
-                LineMark(x: .value("Workout", index), y: .value("Value", value))
+                LineMark(x: .value("Workout", xs[index]), y: .value("Value", value))
                     .foregroundStyle(Color.olive)
                     .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
-                PointMark(x: .value("Workout", index), y: .value("Value", value))
+                PointMark(x: .value("Workout", xs[index]), y: .value("Value", value))
                     .symbol {
                         if index == values.count - 1 {
                             Circle()
@@ -419,7 +442,7 @@ private struct ProgressChart: View {
                     }
             }
         }
-        .chartXScale(domain: 0...max(values.count - 1, 1))
+        .chartXScale(domain: start...max(xs.last ?? start, start + 1))
         .chartXAxis(.hidden)
         .chartYScale(domain: scale.lower...scale.upper)
         .chartYAxis {

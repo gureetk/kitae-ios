@@ -161,7 +161,7 @@ private struct BackupFlowPresentations: ViewModifier {
                     Task { await flow.restore(url, model: model) }
                 }
             } message: { url in
-                Text("Your plans, workouts, exercises and settings will be replaced by the ones in \(url.lastPathComponent). What's in Kitae now is saved first, as \(Backups.beforeRestoreName) in On My iPhone › Kitae.")
+                Text("Your plans, workouts, exercises, weigh-ins and settings will be replaced by the ones in \(url.lastPathComponent). What's in Kitae now is saved first, as \(Backups.beforeRestoreName) in On My iPhone › Kitae.")
             }
             .alert(
                 flow.notice?.title ?? "",

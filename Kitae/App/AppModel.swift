@@ -22,6 +22,8 @@ final class AppModel {
     var hasDoneSets: Bool { hadDoneSets || (workout?.doneCount ?? 0) > 0 }
     /// Whether any set was done as of the last time the database was read.
     private var hadDoneSets = false
+    /// The profile and weigh-ins from the Body page.
+    private(set) var bodyLog = BodyLog()
     /// A day picked on Today instead of the one up next.
     var pickedDayID: TrainingDay.ID?
     private(set) var workout: Workout? {
@@ -117,7 +119,8 @@ final class AppModel {
                     plan: try currentID.flatMap { try Plans.plan(db, id: $0) },
                     lastDone: try Sessions.lastDoneDayID(db),
                     hasDoneSets: try Sessions.hasDoneSets(db),
-                    active: try Sessions.active(db, today: today)
+                    active: try Sessions.active(db, today: today),
+                    body: try BodyStore.log(db)
                 )
             }
             historyRevision += 1
@@ -125,6 +128,7 @@ final class AppModel {
             currentPlan = snapshot.plan
             upNextDayID = Plans.dayAfter(snapshot.lastDone, in: snapshot.plan?.days ?? [])?.id
             hadDoneSets = snapshot.hasDoneSets
+            bodyLog = snapshot.body
             if let active = snapshot.active {
                 if workout?.id != active.id {
                     workout = try makeWorkout(id: active.id)
@@ -268,6 +272,52 @@ final class AppModel {
         close()
     }
 
+    // MARK: Body
+
+    /// Saves a day's weigh-in. It takes the place of `replacing`, the one being changed, and
+    /// of anything else on that day.
+    func saveWeighIn(date: Int, weightKg: Double?, bodyFatPercent: Double?, replacing id: Int64? = nil) {
+        do {
+            try database.write { db in
+                try BodyStore.save(db, date: date, weightKg: weightKg, bodyFatPercent: bodyFatPercent, replacing: id)
+            }
+        } catch {
+            report(error, "Couldn't save the weigh-in")
+        }
+        reloadBody()
+    }
+
+    func deleteWeighIn(_ id: Int64) {
+        do {
+            try database.write { db in try BodyStore.delete(db, id: id) }
+        } catch {
+            report(error, "Couldn't delete the weigh-in")
+        }
+        reloadBody()
+    }
+
+    func saveProfile(_ profile: BodyProfile) {
+        do {
+            try database.write { db in try BodyStore.save(db, profile: profile) }
+        } catch {
+            report(error, "Couldn't save your details")
+        }
+        reloadBody()
+    }
+
+    /// A finished workout's active energy, when Kitae knows a weight.
+    func activeKilocalories(_ workout: WorkoutSummary) -> Double? {
+        bodyLog.activeKilocalories(workout)
+    }
+
+    private func reloadBody() {
+        do {
+            bodyLog = try database.read { db in try BodyStore.log(db) }
+        } catch {
+            report(error, "Couldn't read your weigh-ins")
+        }
+    }
+
     // MARK: Exercises
 
     /// Saves a new exercise, or an existing one's details, and returns its id. Throws a
@@ -329,7 +379,7 @@ final class AppModel {
 
     // MARK: Starting over
 
-    /// Erases every plan, workout, exercise and setting, so Kitae is as it was when it was
+    /// Erases every plan, workout, exercise, weigh-in and setting, so Kitae is as it was when it was
     /// installed, like Kitae for Android's "Reset app", welcome and all. A workout in progress
     /// goes too. Backups stay in their folder.
     func reset() throws {

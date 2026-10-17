@@ -81,10 +81,13 @@ nonisolated struct ExerciseRecords: Hashable, Sendable {
     /// The set with the most reps, or the longest hold, and the heaviest of those.
     var mostReps: SetDraft?
     var workoutCount: Int
+    /// The day of the workout with the heaviest set, the latest if it was lifted more than once.
+    var heaviestDate: Int?
 
     init(history: [ExerciseSession]) {
         let sets = history.flatMap(\.workSets)
         heaviest = heaviestSet(sets)
+        heaviestDate = heaviest.flatMap { best in history.first { $0.workSets.contains(best) }?.date }
         mostReps = sets.max { ($0.reps, $0.weightKg) < ($1.reps, $1.weightKg) }
         workoutCount = history.count
     }

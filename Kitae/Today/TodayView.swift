@@ -12,6 +12,8 @@ struct TodayView: View {
     @State private var finishQuestion: FinishQuestion?
     /// The plan being edited, pushed over Today.
     @State private var editing: PlanEditor?
+    /// Workouts finished today, with the energy they used.
+    @State private var doneToday: [WorkoutSummary] = []
 
     var body: some View {
         NavigationStack {
@@ -29,6 +31,11 @@ struct TodayView: View {
                             .foregroundStyle(.inkSoft)
                             .frame(maxWidth: .infinity)
                             .padding(.top, 14)
+                        if !doneToday.isEmpty {
+                            doneTodayList
+                                .padding(.top, 36)
+                                .padding(.horizontal, 16)
+                        }
                         if !day.exercises.isEmpty {
                             exerciseList(day)
                                 .padding(.top, 44)
@@ -73,8 +80,10 @@ struct TodayView: View {
             .navigationDestination(item: $editing) { editor in
                 PlanEditView(editor: editor)
             }
+            .appRoutes()
         }
         .task { await openDebugScreen() }
+        .task(id: model.historyRevision) { loadDoneToday() }
     }
 
     private func header(_ day: TrainingDay) -> some View {
@@ -158,6 +167,55 @@ struct TodayView: View {
             model.finishWorkout(mode, addNewSets: addNewSets)
             model.startWorkout(next)
         }
+    }
+
+    /// Today's finished workouts: how long they took, their sets, and the energy they used.
+    private var doneTodayList: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Caption(".done today")
+                .padding(.leading, 8)
+            ForEach(doneToday) { workout in
+                NavigationLink(value: AppRoute.workout(workout.id)) {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(workout.title)
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(.ink)
+                            Text(workoutDetails(workout))
+                                .font(.footnote)
+                                .foregroundStyle(.inkSoft)
+                        }
+                        Spacer(minLength: 8)
+                        if let kilocalories = model.activeKilocalories(workout) {
+                            VStack(alignment: .trailing, spacing: 0) {
+                                Text("≈ \(roundedKilocalories(kilocalories))")
+                                    .font(.kitaeMono(20, relativeTo: .title3, bold: true))
+                                    .foregroundStyle(.olive)
+                                Text("kcal")
+                                    .font(.kitaeMono(11, relativeTo: .caption2))
+                                    .foregroundStyle(.inkSoft)
+                            }
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("About \(roundedKilocalories(kilocalories)) kilocalories")
+                        }
+                        Image(systemName: "chevron.forward")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.inkFaint)
+                    }
+                    .padding(.horizontal, 18)
+                    .frame(minHeight: 68)
+                    .background(.card, in: .rect(cornerRadius: 24))
+                    .contentShape(.rect(cornerRadius: 24))
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Shows its sets")
+            }
+        }
+    }
+
+    private func loadDoneToday() {
+        let today = EpochDay.of(.now)
+        doneToday = (try? model.database.read { db in try Sessions.finished(db, from: today, to: today) }) ?? []
     }
 
     private func exerciseList(_ day: TrainingDay) -> some View {
