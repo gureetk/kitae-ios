@@ -36,11 +36,15 @@ struct RootView: View {
         .workoutAccessory(model.workout != nil) {
             WorkoutAccessory()
         }
-        .fullScreenCover(isPresented: $model.isWorkoutPresented) {
+        .fullScreenCover(isPresented: $model.isWorkoutPresented, onDismiss: { model.workoutClosed() }) {
             if let workout = model.workout {
                 WorkoutView(workout: workout)
                     .environment(model)
             }
+        }
+        .sheet(item: $model.finishedWorkout) { finished in
+            WorkoutDoneView(workoutID: finished.id)
+                .environment(model)
         }
         .sheet(isPresented: $model.isChoosingPlan) {
             PlansView()
@@ -76,6 +80,7 @@ struct RootView: View {
             if DebugLaunch.opensWorkout {
                 model.isWorkoutPresented = true
             }
+            DebugLaunch.openWorkoutDone(model)
             #endif
             model.welcomeIfNeeded()
         }

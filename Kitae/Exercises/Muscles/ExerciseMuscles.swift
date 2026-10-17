@@ -91,8 +91,13 @@ nonisolated enum ExerciseMuscles {
 
     /// A starter exercise's own muscles, or for people's own exercises, their muscle group.
     static func work(for exercise: Exercise) -> MuscleWork? {
-        if let work = byID[exercise.id] { return work }
-        guard let group = exercise.muscle else { return nil }
+        work(exerciseID: exercise.id, target: exercise.target)
+    }
+
+    /// The same, from an exercise's id and its muscle group as it's stored, like "Chest".
+    static func work(exerciseID: Int64, target: String) -> MuscleWork? {
+        if let work = byID[exerciseID] { return work }
+        guard let group = MuscleGroup(rawValue: target) else { return nil }
         return MuscleWork(primary: group.muscles, secondary: [])
     }
 }

@@ -32,6 +32,9 @@ struct SettingsView: View {
                 Toggle("Rest timer alerts", isOn: $model.settings.restAlerts)
                     .listRowBackground(Color.card)
 
+                Toggle("Summary after each workout", isOn: $model.settings.showsWorkoutSummary)
+                    .listRowBackground(Color.card)
+
                 if model.settings.restAlerts, alertsDenied {
                     Button("Allow alerts for Kitae in Settings") {
                         if let url = URL(string: UIApplication.openNotificationSettingsURLString) {

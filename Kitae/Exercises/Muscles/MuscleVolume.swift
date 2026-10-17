@@ -12,14 +12,25 @@ nonisolated struct MuscleVolume: Equatable, Sendable {
 
     init(_ counts: [ExerciseSetCount] = []) {
         for count in counts {
-            totalSets += count.sets
-            guard let work = ExerciseMuscles.work(for: count.exercise) else { continue }
-            for muscle in work.primary {
-                sets[muscle, default: 0] += Double(count.sets)
-            }
-            for muscle in work.secondary {
-                sets[muscle, default: 0] += Double(count.sets) / 2
-            }
+            add(count.sets, of: ExerciseMuscles.work(for: count.exercise))
+        }
+    }
+
+    /// From a workout's done sets.
+    init(doneSets: [DoneSet]) {
+        for set in doneSets where set.type != .warmup {
+            add(1, of: ExerciseMuscles.work(exerciseID: set.exerciseID, target: set.target))
+        }
+    }
+
+    private mutating func add(_ count: Int, of work: MuscleWork?) {
+        totalSets += count
+        guard let work else { return }
+        for muscle in work.primary {
+            sets[muscle, default: 0] += Double(count)
+        }
+        for muscle in work.secondary {
+            sets[muscle, default: 0] += Double(count) / 2
         }
     }
 

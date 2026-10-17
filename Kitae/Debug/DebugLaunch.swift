@@ -13,8 +13,8 @@ import os
 /// `workoutedit` for it while a workout is going, from Today and from the workout; `history` and
 /// `workoutdetail` for History, `exercises`, `exercise` and `howto` (Deadlift's page, which has no
 /// workouts) for Exercises, and `you`, `settings` and `body` for You, with five weeks of example
-/// workouts and weigh-ins; `donetoday` for Today after a workout; `motions` for every exercise
-/// animation.
+/// workouts and weigh-ins; `donetoday` for Today after a workout and `workoutdone` for its
+/// summary; `motions` for every exercise animation.
 /// These use a database in memory, so the real one isn't touched, and they don't ask for alerts.
 /// Their backups go into a temporary folder.
 enum DebugLaunch {
@@ -26,6 +26,8 @@ enum DebugLaunch {
     private static let historyScreens: Set = ["history", "workoutdetail"]
     private static let exerciseScreens: Set = ["exercises", "exercise", "howto"]
     private static let youScreens: Set = ["you", "settings", "body"]
+    /// Screens after a workout was finished today.
+    private static let doneScreens: Set = ["donetoday", "workoutdone"]
     private static let editorScreens: Set = [
         "planedit", "planset", "plansettyping", "addexercise", "newday", "editworkout",
     ]
@@ -49,7 +51,7 @@ enum DebugLaunch {
     /// Whether this launch is for a screenshot.
     static var usesExampleData: Bool {
         guard let screen else { return false }
-        return screen == "today" || screen == "donetoday" || workoutScreens.contains(screen) || editorScreens.contains(screen)
+        return screen == "today" || doneScreens.contains(screen) || workoutScreens.contains(screen) || editorScreens.contains(screen)
             || newPlanScreens.contains(screen) || firstLaunchScreens.contains(screen)
             || historyScreens.contains(screen) || exerciseScreens.contains(screen) || youScreens.contains(screen)
             || galleryPage != nil || opensMotionGallery
@@ -102,9 +104,9 @@ enum DebugLaunch {
             model.selectPlan(plan.id)
         }
         if historyScreens.contains(screen) || exerciseScreens.contains(screen) || youScreens.contains(screen)
-            || screen == "donetoday" {
+            || doneScreens.contains(screen) {
             addExampleBody(to: model)
-            addExampleHistory(to: model, finishedToday: screen == "donetoday")
+            addExampleHistory(to: model, finishedToday: doneScreens.contains(screen))
         }
         guard workoutScreens.contains(screen), let day = model.selectedDay else { return }
         model.startWorkout(day, at: Date.now.addingTimeInterval(-(23 * 60 + 36)))
@@ -174,6 +176,15 @@ enum DebugLaunch {
             note("Couldn't add the example history: \(error)")
         }
         model.reload()
+    }
+
+    /// `workoutdone`: the summary of the example workout finished today.
+    static func openWorkoutDone(_ model: AppModel) {
+        guard screen == "workoutdone", consume("workoutdone") else { return }
+        let today = EpochDay.of(.now)
+        guard let latest = try? model.database.read({ db in try Sessions.finished(db, from: today, to: today) }).first
+        else { return }
+        model.finishedWorkout = FinishedWorkout(id: latest.id)
     }
 
     /// Whether the example workout should open, rather than stay minimized.

@@ -79,6 +79,7 @@ struct BackupSettingsTests {
             "theme": .string("Dark"),
             "decimals": .string("comma"),
             "rest_alerts": .bool(false),
+            "workout_summary": .bool(true),
             "onboarding_done": .bool(true),
             "color_palette": .string("Serene"),
         ])

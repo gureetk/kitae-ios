@@ -165,7 +165,7 @@ struct TodayView: View {
             onContinue: { model.isWorkoutPresented = true }
         ) { mode, addNewSets in
             guard let next = switchingTo else { return }
-            model.finishWorkout(mode, addNewSets: addNewSets)
+            model.finishWorkout(mode, addNewSets: addNewSets, showsSummary: false)
             model.startWorkout(next)
         }
     }

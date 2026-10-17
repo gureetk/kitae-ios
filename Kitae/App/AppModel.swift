@@ -38,6 +38,10 @@ final class AppModel {
     var isChoosingPlan = false
     /// Whether the welcome is showing.
     var isWelcoming = false
+    /// The workout just finished, while its summary shows.
+    var finishedWorkout: FinishedWorkout?
+    /// A summary waiting for the workout's screen to close first.
+    @ObservationIgnored private var pendingSummary: FinishedWorkout?
     /// Goes up whenever workouts or plans may have changed, so History reads them again.
     private(set) var historyRevision = 0
     /// Goes up when Kitae is reset, so every screen starts over.
@@ -238,11 +242,16 @@ final class AppModel {
         }
     }
 
-    /// Ends the workout. Today moves on to the plan's next day.
-    func finishWorkout(_ mode: FinishMode, addNewSets: Bool) {
+    /// Ends the workout. Today moves on to the plan's next day. With a set done, its summary
+    /// opens once the workout has closed, unless Settings say not to or `showsSummary` is false,
+    /// as when another day starts straight after.
+    func finishWorkout(_ mode: FinishMode, addNewSets: Bool, showsSummary: Bool = true) {
         guard let workout else { return }
         workout.skipRest()
         let sessionID = workout.id
+        let summary = showsSummary && settings.showsWorkoutSummary && workout.doneCount > 0
+            ? FinishedWorkout(id: sessionID) : nil
+        let wasPresented = isWorkoutPresented
         let now = clock().epochMilliseconds
         do {
             try database.write { db in
@@ -253,9 +262,21 @@ final class AppModel {
             return
         }
         close()
+        if wasPresented {
+            pendingSummary = summary
+        } else {
+            finishedWorkout = summary
+        }
         if settings.backUpAfterWorkouts {
             backupAfterWorkout = Task { _ = await backUp() }
         }
+    }
+
+    /// The workout's screen has closed: a summary that was waiting for it opens.
+    func workoutClosed() {
+        guard let summary = pendingSummary else { return }
+        pendingSummary = nil
+        finishedWorkout = summary
     }
 
     /// Removes the workout and its sets. The plan stays the same.
