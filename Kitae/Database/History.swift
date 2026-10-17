@@ -211,6 +211,31 @@ nonisolated extension Sessions {
             .filter { $0.doneCount > 0 }
     }
 
+    /// The done sets of the workouts from `first` to `last`, by workout, for their energy.
+    static func doneSets(_ db: Database, from first: Int, to last: Int) throws -> [Int64: [DoneSet]] {
+        let rows = try Row.fetchAll(db, sql: """
+            SELECT `sets`.`sessionId`, `sets`.`reps`, `sets`.`weight`, `sets`.`type`,
+            `exercises`.`id` AS `exerciseId`, `exercises`.`target`, `exercises`.`isIsometric`
+            FROM `sets`
+            JOIN `sessions` ON `sessions`.`id` = `sets`.`sessionId`
+            JOIN `exercises` ON `exercises`.`id` = `sets`.`exerciseId`
+            WHERE `sets`.`isCompleted` = 1
+            AND `sessions`.`date` BETWEEN ? AND ?
+            """, arguments: [first, last])
+        var sets: [Int64: [DoneSet]] = [:]
+        for row in rows {
+            sets[row["sessionId"], default: []].append(DoneSet(
+                exerciseID: row["exerciseId"],
+                target: row["target"],
+                isIsometric: row["isIsometric"],
+                reps: row["reps"],
+                weightKg: row["weight"],
+                type: SetType(stored: row["type"])
+            ))
+        }
+        return sets
+    }
+
     static func summary(_ db: Database, id: Int64) throws -> WorkoutSummary? {
         try Row.fetchOne(db, sql: """
             SELECT `sessions`.*, `routines`.`name` AS `routineName`,

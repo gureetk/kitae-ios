@@ -305,9 +305,9 @@ final class AppModel {
         reloadBody()
     }
 
-    /// A finished workout's active energy, when Kitae knows a weight.
-    func activeKilocalories(_ workout: WorkoutSummary) -> Double? {
-        bodyLog.activeKilocalories(workout)
+    /// A finished workout's active energy from its done sets, when Kitae knows a weight.
+    func activeKilocalories(_ workout: WorkoutSummary, sets: [DoneSet]) -> Double? {
+        bodyLog.activeKilocalories(workout, sets: sets)
     }
 
     private func reloadBody() {

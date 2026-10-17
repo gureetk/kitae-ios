@@ -69,6 +69,12 @@ struct WorkoutDetailView: View {
 
     private var today: Int { EpochDay.of(.now) }
 
+    /// The energy the workout used, from its done sets.
+    private var kilocalories: Double? {
+        guard let record else { return nil }
+        return model.activeKilocalories(record.summary, sets: record.exercises.flatMap(\.doneSets))
+    }
+
     private func header(_ summary: WorkoutSummary) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(summary.title)
@@ -79,7 +85,7 @@ struct WorkoutDetailView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
             Caption(HistoryDates.long(summary.date, today: today))
-            Caption(summary.isSkipped ? ".skipped" : workoutDetails(summary, kilocalories: model.activeKilocalories(summary)))
+            Caption(summary.isSkipped ? ".skipped" : workoutDetails(summary, kilocalories: kilocalories))
         }
     }
 

@@ -11,8 +11,9 @@ struct YouView: View {
     @Environment(AppModel.self) private var model
     @State private var totals = TrainingTotals()
     @State private var weeks: ActivityWeeks?
-    /// This week's finished workouts.
+    /// This week's finished workouts, and their done sets.
     @State private var thisWeek: [WorkoutSummary] = []
+    @State private var thisWeekSets: [Int64: [DoneSet]] = [:]
     /// The sets of the last 7 days, by muscle.
     @State private var muscles = MuscleVolume()
     @State private var showsBody = false
@@ -31,7 +32,7 @@ struct YouView: View {
                         StatTile(title: "Days", value: totals.days)
                         StatTile(title: "Exercises", value: totals.exercises)
                     }
-                    WeekTile(totals: model.bodyLog.totals(thisWeek)) {
+                    WeekTile(totals: model.bodyLog.totals(thisWeek, sets: thisWeekSets)) {
                         showsBody = true
                     }
                     MusclesCard(volume: muscles, formatter: model.weightFormatter)
@@ -124,13 +125,15 @@ struct YouView: View {
                     try Stats.totals(db),
                     try Stats.activity(db, today: today, firstWeekday: firstWeekday),
                     try Sessions.finished(db, from: startOfWeek(today, firstWeekday: firstWeekday), to: today),
+                    try Sessions.doneSets(db, from: startOfWeek(today, firstWeekday: firstWeekday), to: today),
                     try Stats.exerciseSets(db, from: today - 6, to: today)
                 )
             }
             totals = loaded.0
             weeks = loaded.1
             thisWeek = loaded.2
-            muscles = MuscleVolume(loaded.3)
+            thisWeekSets = loaded.3
+            muscles = MuscleVolume(loaded.4)
         } catch {
             model.problem = "Couldn't count your workouts. \(error.localizedDescription)"
         }

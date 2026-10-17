@@ -65,7 +65,7 @@ struct BodyView: View {
             } header: {
                 SectionCaption(".about you")
             } footer: {
-                Text("All optional, and kept on this iPhone and in Kitae's backups. Your weight lets Kitae work out the energy your workouts use; the rest makes it closer.")
+                Text("All optional, and kept on this iPhone and in Kitae's backups. Your weight lets Kitae work out the energy your workouts use, from the sets you do.")
                     .foregroundStyle(.inkSoft)
             }
         }

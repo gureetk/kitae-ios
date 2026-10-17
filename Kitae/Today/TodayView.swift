@@ -12,8 +12,9 @@ struct TodayView: View {
     @State private var finishQuestion: FinishQuestion?
     /// The plan being edited, pushed over Today.
     @State private var editing: PlanEditor?
-    /// Workouts finished today, with the energy they used.
+    /// Workouts finished today, and their done sets for the energy they used.
     @State private var doneToday: [WorkoutSummary] = []
+    @State private var doneTodaySets: [Int64: [DoneSet]] = [:]
 
     var body: some View {
         NavigationStack {
@@ -186,7 +187,7 @@ struct TodayView: View {
                                 .foregroundStyle(.inkSoft)
                         }
                         Spacer(minLength: 8)
-                        if let kilocalories = model.activeKilocalories(workout) {
+                        if let kilocalories = model.activeKilocalories(workout, sets: doneTodaySets[workout.id] ?? []) {
                             VStack(alignment: .trailing, spacing: 0) {
                                 Text("≈ \(roundedKilocalories(kilocalories))")
                                     .font(.kitaeMono(20, relativeTo: .title3, bold: true))
@@ -215,7 +216,11 @@ struct TodayView: View {
 
     private func loadDoneToday() {
         let today = EpochDay.of(.now)
-        doneToday = (try? model.database.read { db in try Sessions.finished(db, from: today, to: today) }) ?? []
+        let loaded = try? model.database.read { db in
+            (try Sessions.finished(db, from: today, to: today), try Sessions.doneSets(db, from: today, to: today))
+        }
+        doneToday = loaded?.0 ?? []
+        doneTodaySets = loaded?.1 ?? [:]
     }
 
     private func exerciseList(_ day: TrainingDay) -> some View {

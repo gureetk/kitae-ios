@@ -3,69 +3,57 @@
 
 import Foundation
 
-/// An estimate of the energy a workout used on top of resting: its active energy, as Apple
-/// Health counts it, so a calorie tracker can add it to the day without counting resting energy
-/// twice. It needs a weight; the rest of the profile makes it closer.
+/// A done set, as a workout's energy estimate needs it.
+nonisolated struct DoneSet: Hashable, Sendable {
+    var exerciseID: Int64
+    /// The exercise's muscle group, as it's stored, like "Chest".
+    var target: String
+    var isIsometric: Bool
+    var reps: Int
+    var weightKg: Double
+    var type: SetType
+}
+
+/// An estimate of the energy a workout used on top of resting, its active energy as Apple Health
+/// counts it, so a calorie tracker can add it to the day without counting resting energy twice.
 ///
-/// Weight training with several exercises of 8 to 15 reps is 3.5 METs in the 2024 Adult
-/// Compendium of Physical Activities (code 02054), and a MET is about 1 kcal for each kilogram
-/// an hour, so a workout uses 3.5 kcal per kilogram an hour. Resting energy is taken off: from
-/// lean mass when body fat is known (Katch-McArdle), else from weight, height, age and sex
-/// (Mifflin-St Jeor), else 1 kcal per kilogram an hour. A workout counts for at most six
-/// minutes for each set done, so one left running after the last set isn't counted as hours of
-/// training. Workouts without a known length, or without a set done, have none.
+/// It's worked out from the sets done, not from how long the workout took: each set by its
+/// exercise, reps, weight and type (see `ExerciseEnergy`), counting the body's own weight where
+/// the exercise moves it and the recovery after the set. On top comes being up and about between
+/// sets, half a MET over resting, for at most three minutes a set, so a workout left running or
+/// a long chat between sets adds little. Without its length, that's two and a half minutes a set.
 nonisolated enum WorkoutEnergy {
-    static let met = 3.5
-    static let longestMinutesPerSet = 6.0
+    static let betweenSetsMETs = 0.5
+    static let longestMinutesPerSet = 3.0
+    static let usualMinutesPerSet = 2.5
 
-    /// Kilocalories a day at rest.
-    static func restingPerDay(weightKg: Double, bodyFatPercent: Double?, profile: BodyProfile, on day: Int) -> Double {
-        if let bodyFatPercent, (2...70).contains(bodyFatPercent) {
-            return 370 + 21.6 * weightKg * (1 - bodyFatPercent / 100)
+    /// Active kcal for a workout's done sets.
+    static func active(sets: [DoneSet], durationMilliseconds: Int64?, bodyKg: Double) -> Double {
+        guard !sets.isEmpty, bodyKg > 0 else { return 0 }
+        let lifting = sets.reduce(0.0) { total, set in
+            let energy = ExerciseEnergy.of(exerciseID: set.exerciseID, target: set.target, isIsometric: set.isIsometric)
+            return total + energy.kilocalories(reps: set.reps, weightKg: set.weightKg, bodyKg: bodyKg) * set.type.energyFactor
         }
-        if let height = profile.heightCm, let age = profile.age(on: day), let sex = profile.sex {
-            let mifflin = 10 * weightKg + 6.25 * height - 5 * Double(age) + (sex == .male ? 5 : -161)
-            if mifflin > 0 { return mifflin }
-        }
-        return 24 * weightKg
-    }
-
-    /// Active kilocalories for `minutes` of weight training.
-    static func active(minutes: Double, weightKg: Double, restingPerDay: Double) -> Double {
-        let hours = minutes / 60
-        return max(met * weightKg * hours - restingPerDay / 24 * hours, 0)
-    }
-
-    /// The minutes a workout counts for.
-    static func countedMinutes(_ workout: WorkoutSummary) -> Double? {
-        guard workout.isFinished, workout.doneCount > 0, let milliseconds = workout.durationMilliseconds else {
-            return nil
-        }
-        return min(Double(milliseconds) / 60_000, Double(workout.doneCount) * longestMinutesPerSet)
+        let count = Double(sets.count)
+        let length = durationMilliseconds.map { Double($0) / 60_000 } ?? count * usualMinutesPerSet
+        let minutes = min(length, count * longestMinutesPerSet)
+        return lifting + betweenSetsMETs * bodyKg * minutes / 60
     }
 }
 
 nonisolated extension BodyLog {
-    /// A finished workout's active energy, or nil when Kitae can't tell: no weight yet, no set
-    /// done, or the workout's length isn't known.
-    func activeKilocalories(_ workout: WorkoutSummary) -> Double? {
-        guard let minutes = WorkoutEnergy.countedMinutes(workout), let weight = weightKg(on: workout.date) else {
-            return nil
-        }
-        let resting = WorkoutEnergy.restingPerDay(
-            weightKg: weight,
-            bodyFatPercent: bodyFatPercent(on: workout.date),
-            profile: profile,
-            on: workout.date
-        )
-        return WorkoutEnergy.active(minutes: minutes, weightKg: weight, restingPerDay: resting)
+    /// A finished workout's active energy from its done sets, or nil when Kitae can't tell: no
+    /// weight yet, or no set done.
+    func activeKilocalories(_ workout: WorkoutSummary, sets: [DoneSet]) -> Double? {
+        guard workout.isFinished, !sets.isEmpty, let weight = weightKg(on: workout.date) else { return nil }
+        return WorkoutEnergy.active(sets: sets, durationMilliseconds: workout.durationMilliseconds, bodyKg: weight)
     }
 
     /// The workouts of a stretch of days, their minutes, and their active energy when a weight
-    /// is known.
-    func totals(_ workouts: [WorkoutSummary]) -> WorkoutTotals {
+    /// is known. `sets` are the done sets by workout.
+    func totals(_ workouts: [WorkoutSummary], sets: [Int64: [DoneSet]]) -> WorkoutTotals {
         let done = workouts.filter { $0.isFinished && $0.doneCount > 0 }
-        let energies = done.map { activeKilocalories($0) }
+        let energies = done.map { activeKilocalories($0, sets: sets[$0.id] ?? []) }
         return WorkoutTotals(
             workouts: done.count,
             minutes: done.compactMap(\.minutes).reduce(0, +),
@@ -85,4 +73,14 @@ nonisolated struct WorkoutTotals: Equatable, Sendable {
 /// The first day of the week `today` is in, on the phone's first day of the week.
 nonisolated func startOfWeek(_ today: Int, firstWeekday: Int) -> Int {
     today - (weekday(ofEpochDay: today) - firstWeekday + 7) % 7
+}
+
+nonisolated extension WorkoutExercise {
+    /// Its done sets, for the energy estimate.
+    var doneSets: [DoneSet] {
+        sets.filter(\.isDone).map {
+            DoneSet(exerciseID: exercise.id, target: exercise.target, isIsometric: exercise.isIsometric,
+                    reps: $0.reps, weightKg: $0.weightKg, type: $0.type)
+        }
+    }
 }

@@ -93,51 +93,99 @@ struct BodyTests {
         #expect(profile.age(on: 9630 + 365 * 30 + 8) == 30) // 15 May 2026
     }
 
-    private func workout(minutes: Int, sets: Int, date: Int = 100) -> WorkoutSummary {
-        WorkoutSummary(id: 1, date: date, planID: nil, dayID: nil, dayName: "Push A", isFinished: true,
-                       startedAt: 0, finishedAt: Int64(minutes) * 60_000, setCount: sets, doneCount: sets)
+    private func workout(minutes: Int?, sets: Int, date: Int = 100) -> WorkoutSummary {
+        WorkoutSummary(id: 1, date: date, planID: nil, dayID: nil, dayName: "Legs", isFinished: true,
+                       startedAt: minutes == nil ? nil : 0, finishedAt: minutes.map { Int64($0) * 60_000 },
+                       setCount: sets, doneCount: sets)
     }
 
-    @Test func aWorkoutsEnergyIsWhatItAddsToResting() throws {
-        // 80 kg for an hour: 3.5 kcal per kilogram an hour, less 1 at rest.
-        let weightOnly = BodyLog(entries: [BodyEntry(id: 1, date: 90, weightKg: 80)])
-        let plain = try #require(weightOnly.activeKilocalories(workout(minutes: 60, sets: 15)))
-        #expect(abs(plain - 200) < 0.001)
-
-        // Height, age and sex: Mifflin-St Jeor, 1780 kcal a day for this man of 30.
-        var profiled = weightOnly
-        profiled.profile = BodyProfile(heightCm: 180, birthDate: 100 - 365 * 30 - 20, sex: .male)
-        let mifflin = try #require(profiled.activeKilocalories(workout(minutes: 60, sets: 15)))
-        #expect(abs(mifflin - (280 - 1780.0 / 24)) < 0.001)
-
-        // Body fat: Katch-McArdle, from 64 kg of lean mass.
-        profiled.entries[0].bodyFatPercent = 20
-        let katch = try #require(profiled.activeKilocalories(workout(minutes: 60, sets: 15)))
-        #expect(abs(katch - (280 - (370 + 21.6 * 64) / 24)) < 0.001)
+    private func done(_ exerciseID: Int64, reps: Int, kg: Double, _ type: SetType = .standard,
+                      target: String = "Quads", isIsometric: Bool = false) -> DoneSet {
+        DoneSet(exerciseID: exerciseID, target: target, isIsometric: isIsometric, reps: reps, weightKg: kg, type: type)
     }
 
-    @Test func aWorkoutLeftRunningCountsSixMinutesASet() throws {
-        let log = BodyLog(entries: [BodyEntry(id: 1, date: 90, weightKg: 80)])
-        let overnight = try #require(log.activeKilocalories(workout(minutes: 300, sets: 10)))
-        let hour = try #require(log.activeKilocalories(workout(minutes: 60, sets: 10)))
+    @Test func aSetCostsTheWeightItMovesByTheExercise() {
+        // Squats: 0.0075 kcal a rep for each kilogram moved, the bar and 85% of the body.
+        let squats = ExerciseEnergy.of(exerciseID: 11, target: "Quads", isIsometric: false)
+        #expect(abs(squats.kilocalories(reps: 10, weightKg: 100, bodyKg: 80) - 0.0075 * (100 + 68) * 10) < 1e-9)
+        // Curls with a pair of 12 kg dumbbells: both count.
+        let curls = ExerciseEnergy.of(exerciseID: 1, target: "Biceps", isIsometric: false)
+        #expect(abs(curls.kilocalories(reps: 10, weightKg: 12, bodyKg: 80) - 0.011 * (24 + 1.6) * 10) < 1e-9)
+        // A minute of plank: 2.5 METs over resting.
+        let plank = ExerciseEnergy.of(exerciseID: 69, target: "Core", isIsometric: true)
+        #expect(abs(plank.kilocalories(reps: 60, weightKg: 0, bodyKg: 80) - 2.5 * 80 / 60) < 1e-9)
+        // A big lift costs far more than a small one.
+        #expect(squats.kilocalories(reps: 10, weightKg: 40, bodyKg: 80) > 3 * curls.kilocalories(reps: 10, weightKg: 10, bodyKg: 80))
+        // People's own exercises go by their muscle group.
+        #expect(ExerciseEnergy.of(exerciseID: 999, target: "Calves", isIsometric: false).perKilogram == 0.0034)
+        #expect(ExerciseEnergy.of(exerciseID: 999, target: "Core", isIsometric: true).holdMETs != nil)
+    }
+
+    @Test func everyStarterExerciseHasItsOwnEnergy() {
+        #expect(Set(ExerciseEnergy.starters.keys) == Set(1...75))
+        for (id, energy) in ExerciseEnergy.starters {
+            #expect(energy.holdMETs != nil || energy.perKilogram > 0, "exercise \(id)")
+        }
+        // The holds are the isometric starter exercises.
+        #expect(Set(ExerciseEnergy.starters.filter { $0.value.holdMETs != nil }.keys) == [61, 69, 70])
+    }
+
+    @Test func setTypesCountWhatTheirRepsDontShow() {
+        let between = 0.5 * 80 * 2.5 / 60
+        let plain = WorkoutEnergy.active(sets: [done(11, reps: 10, kg: 100)], durationMilliseconds: nil, bodyKg: 80)
+        let failure = WorkoutEnergy.active(sets: [done(11, reps: 10, kg: 100, .failure)], durationMilliseconds: nil, bodyKg: 80)
+        #expect(abs((failure - between) - 1.15 * (plain - between)) < 1e-9)
+        #expect(SetType.drop.energyFactor == 1.35 && SetType.restPause.energyFactor == 1.2)
+        // A warm-up counts for its own, lighter weight.
+        let warmUp = WorkoutEnergy.active(sets: [done(11, reps: 10, kg: 40, .warmup)], durationMilliseconds: nil, bodyKg: 80)
+        #expect(warmUp < plain)
+    }
+
+    @Test func timeBetweenSetsCountsLittleAndHasALimit() {
+        let sets = Array(repeating: done(21, reps: 10, kg: 60, target: "Chest"), count: 10)
+        let lifting = WorkoutEnergy.active(sets: sets, durationMilliseconds: 0, bodyKg: 80)
+        let hour = WorkoutEnergy.active(sets: sets, durationMilliseconds: 3_600_000, bodyKg: 80)
+        let overnight = WorkoutEnergy.active(sets: sets, durationMilliseconds: 8 * 3_600_000, bodyKg: 80)
+        // At most 3 minutes a set: 30 minutes at half a MET for 80 kg is 20 kcal.
+        #expect(abs((hour - lifting) - 20) < 1e-9)
         #expect(overnight == hour)
+        // Without the workout's length, 2.5 minutes a set.
+        let unknown = WorkoutEnergy.active(sets: sets, durationMilliseconds: nil, bodyKg: 80)
+        #expect(abs((unknown - lifting) - 0.5 * 80 * 25 / 60) < 1e-9)
+    }
+
+    @Test func aLegDayUsesMoreThanAnArmDay() throws {
+        let log = BodyLog(entries: [BodyEntry(id: 1, date: 90, weightKg: 80)])
+        let legs = Array(repeating: done(11, reps: 8, kg: 100), count: 4)
+            + Array(repeating: done(62, reps: 10, kg: 80, target: "Hamstrings"), count: 3)
+        let arms = Array(repeating: done(1, reps: 12, kg: 12, target: "Biceps"), count: 4)
+            + Array(repeating: done(5, reps: 12, kg: 25, target: "Triceps"), count: 3)
+        let legDay = try #require(log.activeKilocalories(workout(minutes: 45, sets: 7), sets: legs))
+        let armDay = try #require(log.activeKilocalories(workout(minutes: 45, sets: 7), sets: arms))
+        #expect(legDay > 2 * armDay)
+        #expect((90...110).contains(legDay) && (30...45).contains(armDay))
     }
 
     @Test func noWeightOrNoSetsMeansNoEnergy() {
-        #expect(BodyLog().activeKilocalories(workout(minutes: 60, sets: 15)) == nil)
+        let squats = [done(11, reps: 10, kg: 100)]
+        #expect(BodyLog().activeKilocalories(workout(minutes: 60, sets: 1), sets: squats) == nil)
         let log = BodyLog(entries: [BodyEntry(id: 1, date: 90, weightKg: 80)])
-        #expect(log.activeKilocalories(workout(minutes: 60, sets: 0)) == nil)
-        var unknownLength = workout(minutes: 60, sets: 15)
-        unknownLength.startedAt = nil
-        #expect(log.activeKilocalories(unknownLength) == nil)
+        #expect(log.activeKilocalories(workout(minutes: 60, sets: 0), sets: []) == nil)
+        // A workout without its times, from older Android data, still has its sets.
+        #expect(log.activeKilocalories(workout(minutes: nil, sets: 1), sets: squats) != nil)
     }
 
     @Test func theWeekAddsUpItsWorkouts() {
         let log = BodyLog(entries: [BodyEntry(id: 1, date: 90, weightKg: 80)])
-        let totals = log.totals([workout(minutes: 60, sets: 15), workout(minutes: 30, sets: 8)])
+        let first = workout(minutes: 60, sets: 1)
+        var second = workout(minutes: 30, sets: 1)
+        second.id = 2
+        let sets: [Int64: [DoneSet]] = [1: [done(11, reps: 10, kg: 100)], 2: [done(21, reps: 10, kg: 60, target: "Chest")]]
+        let totals = log.totals([first, second], sets: sets)
         #expect(totals.workouts == 2 && totals.minutes == 90)
-        #expect(abs((totals.kilocalories ?? 0) - 300) < 0.001)
-        #expect(BodyLog().totals([workout(minutes: 60, sets: 15)]).kilocalories == nil)
+        let expected = (log.activeKilocalories(first, sets: sets[1] ?? []) ?? 0) + (log.activeKilocalories(second, sets: sets[2] ?? []) ?? 0)
+        #expect(abs((totals.kilocalories ?? 0) - expected) < 1e-9)
+        #expect(BodyLog().totals([first], sets: sets).kilocalories == nil)
     }
 
     @Test func weeksStartOnThePhonesFirstDay() {

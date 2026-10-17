@@ -7,6 +7,8 @@ import SwiftUI
 struct HistoryView: View {
     @Environment(AppModel.self) private var model
     @State private var months: [HistoryMonth] = []
+    /// Each workout's done sets, for the energy it used.
+    @State private var doneSets: [Int64: [DoneSet]] = [:]
     @State private var hasLoaded = false
     @State private var path: [AppRoute] = []
     @State private var deleting: WorkoutSummary?
@@ -133,7 +135,7 @@ struct HistoryView: View {
                 .font(.kitaeMono(12, relativeTo: .caption))
                 .foregroundStyle(.inkSoft)
         } else {
-            Text(workoutDetails(workout, kilocalories: model.activeKilocalories(workout)))
+            Text(workoutDetails(workout, kilocalories: model.activeKilocalories(workout, sets: doneSets[workout.id] ?? [])))
                 .font(.footnote)
                 .foregroundStyle(.inkSoft)
         }
@@ -142,8 +144,13 @@ struct HistoryView: View {
     private func load() {
         let activeID = model.workout?.id
         do {
-            let workouts = try model.database.read { db in try Sessions.history(db, activeID: activeID) }
+            let (workouts, sets) = try model.database.read { db -> ([WorkoutSummary], [Int64: [DoneSet]]) in
+                let workouts = try Sessions.history(db, activeID: activeID)
+                let dates = workouts.map(\.date)
+                return (workouts, try Sessions.doneSets(db, from: dates.min() ?? 0, to: dates.max() ?? 0))
+            }
             months = historyMonths(workouts, activeID: activeID)
+            doneSets = sets
         } catch {
             model.problem = "Couldn't read your workouts. \(error.localizedDescription)"
         }
